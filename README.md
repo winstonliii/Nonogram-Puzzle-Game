@@ -5,3 +5,7 @@ Setup:
 
 ``` clone the repository ```
 ``` dune build ```
+
+
+Dream Testing:
+dune exec --root . ./nonogram_web.exe

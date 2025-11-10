@@ -1,0 +1,37 @@
+# Dune build artifacts
+_build/
+
+# Compiled OCaml files
+*.cmi
+*.cmo
+*.cmx
+*.cmxa
+*.cma
+*.cmxs
+*.o
+*.a
+*.so
+
+# Executables
+*.exe
+*.native
+*.byte
+
+# Merlin IDE files
+.merlin
+
+# OCamlFormat
+.ocamlformat
+
+# Dune install files
+*.install
+
+# Editor files
+*.swp
+*.swo
+*~
+.DS_Store
+
+# Logs
+*.log
+
