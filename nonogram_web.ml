@@ -110,13 +110,13 @@ let () =
         
         <div class="button-group">
             <button class="btn btn-primary" onclick="alert('Game starting soon!')">
-                🎮 Start New Game
+                 Start New Game
             </button>
             <button class="btn btn-secondary" onclick="alert('Choose difficulty: Easy, Medium, or Hard')">
-                📊 Select Difficulty
+                 Select Difficulty
             </button>
             <button class="btn btn-secondary" onclick="alert('Instructions: Fill squares based on number clues to reveal pictures!')">
-                ℹ️ How to Play
+                 How to Play
             </button>
         </div>
     </div>
