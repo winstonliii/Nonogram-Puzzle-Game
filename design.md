@@ -20,23 +20,17 @@ Stdio
 Cmdliner
 Dream
 
-4. module type declarations
+4. module type declarations (in /src and /test)
 /src
-types.mli (shared types and printers)
-grid.mli (immutable board representation and accessors)
-clue.mli (clue legality, placements, and intersections)
-puzzle.mli
-core puzzle data structure with grid, cells, and clues
-solver.mli 
-constraint propagation and backtracking solver
-generator.mli 
-puzzle generation with unique solution verification
-validator.mli 
-solution validation and error checking
-game.mli 
-game state management and user actions
-ui.mli - User interface rendering and event handling
-timer.mli
+puzzle.mli: core puzzle data structure with grid, cells, and clues
+solver.mli: constraint propagation and backtracking solver
+generator.mli: puzzle generation with unique solution verification
+validator.mli: solution validation and error checking
+game.mli: game state management and user actions
+ui.mli: User interface rendering and event handling
+
+/test
+tests.mli
 
 ## 5. Implementation Plan
 UI Framework and user tools:
