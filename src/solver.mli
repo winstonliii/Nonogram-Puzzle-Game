@@ -3,9 +3,10 @@ type solve_result =
   | Solved of Puzzle.t 
   | NoSolution
   | PartialSolution of Puzzle.t
+  | MultipleSolutions of Puzzle.t list
 
 (* The type representing a line (row or column) in the puzzle. *)
-type line = Puzzle.cell_state list
+type line = Line of Puzzle.cell_state list [@@unboxed]
 
 (* [solve_line clue line] applies constraint propagation to a single line given its clue.
     This is the deterministic line solver that finds cells that must be filled or empty.
