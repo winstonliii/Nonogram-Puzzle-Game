@@ -2,13 +2,12 @@
 type validation_result =
   | Valid
   | Incomplete
-  | Invalid of error
+  | Invalid of error list
 
 (** Type of validation errors. *)
 and error =
   | RowError of int * string 
   | ColError of int * string  
-  | MultipleErrors of error list 
 
 (* [validate puzzle] checks if the puzzle is completely and correctly solved.
     

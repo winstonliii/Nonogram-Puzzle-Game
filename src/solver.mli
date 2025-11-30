@@ -16,3 +16,7 @@ type line = Line of Puzzle.cell_state list [@@unboxed]
     2. Filter out placements inconsistent with already-known cells
     3. Find cells that are the same in all valid placements (always filled or always empty)
 *)
+val solve_line : Puzzle.clue -> line -> line
+
+(* Fully solves puzzles using repeated line solving and back tracking *)
+val solve : Puzzle.t -> solve_result

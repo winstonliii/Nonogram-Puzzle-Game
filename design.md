@@ -10,14 +10,15 @@ Figma Link to Mock Use Prototype https://www.figma.com/design/mrb72ZRo0aLhGcSyi5
 
 Landing page: Select nonogram size, Generate new nonogram puzzle
 Nonogram page: Nonogram game with Hint (cell, column, row), Auto Solve, Check, and Restart
+Cell hint or row/col hints apply solver or line solver respectively to cell or line to reveal correct state
 Leaderboard page: (Nice to have/stretch goal)
 
 # 3. Libraries
 We will use the following libraries for this project:
+Core
 Stdlib
 OUnit2
 Stdio
-Cmdliner
 Dream
 
 4. module type declarations (in /src and /test)
@@ -41,10 +42,15 @@ UI Framework and user tools:
   - Filled (black)
   - Marked as empty ("X")
 - single-click (fill) and double-click/right-click (mark empty).
+- Support drag interactions:
+  - On mouse down in a cell, remember the state (Filled or Marked Empty).
+  - As the user drags across cells with the click button held, apply the same
+    state to each cell entered
 
 Clue Rendering and Board Context:
 - Display row and column clues around the grid.
-- Ensure clues update dynamically based on puzzle generation.
+- Clues are generated once when the puzzle is created and then remain fixed 
+- UI re-renders the grid state based on moves, but clues do not change
 
 Toolbar and Action Buttons:
 - Implement the top-bar containing core actions:
