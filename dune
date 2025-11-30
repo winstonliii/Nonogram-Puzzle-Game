@@ -1,3 +1,4 @@
 (executable
  (name nonogram_web)
- (libraries dream))
+ (modules nonogram_web)
+ (libraries dream nonogram))

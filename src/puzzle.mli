@@ -26,4 +26,9 @@ val set : t -> position -> cell_state -> t
 val rows : t -> int -> cell_state list
 val cols : t -> int -> cell_state list
 
-(* Need to figure out clue and create puzzle next *)
+(* Clues for rows and columns *)
+val row_clue : t -> int -> clue
+val col_clue : t -> int -> clue
+
+(* Create a puzzle based on size and pre-generated clues *)
+val create : size:int -> row_clues:clue array -> col_clues:clue array -> t
