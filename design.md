@@ -16,7 +16,6 @@ Leaderboard page: (Nice to have/stretch goal)
 # 3. Libraries
 We will use the following libraries for this project:
 Core
-Stdlib
 OUnit2
 Stdio
 Dream
