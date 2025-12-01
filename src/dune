@@ -1,4 +1,5 @@
 (library
  (name nonogram)
  (modules puzzle game generator solver ui validator)
- (modules_without_implementation game generator solver ui validator))
+ (modules_without_implementation game ui)
+ (libraries core))

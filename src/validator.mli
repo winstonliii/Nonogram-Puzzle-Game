@@ -7,6 +7,8 @@ type validation_result =
   | Incomplete
   | Invalid of error list 
 
+val validate : Puzzle.t -> validation_result
+
 (* [validate puzzle] checks if the puzzle is completely and correctly solved.
     
     Validation rules:

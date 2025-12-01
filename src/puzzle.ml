@@ -1,53 +1,46 @@
+open Core
+
 type cell_state =
   | Empty
   | Filled
   | Unknown
 
-type position = { x : int; y : int}
+type position = { x : int; y : int }
 
 type clue = RLE of int list [@@unboxed]
 
-module Position = struct
-  type t = position
-  let compare a b = 
-    match Int.compare a.y b.y with
-    | 0 -> Int.compare a.x b.x
-    | n -> n
-end
-
-module PosMap = Map.Make (Position)
-
 type t = {
-  size : int; grid : cell_state PosMap.t; row_clues : clue array; col_clues: clue array;
+  size : int;
+  grid : (position, cell_state) Map.Poly.t;
+  row_clues : clue array;
+  col_clues : clue array;
 }
 
 let size p = p.size
 
-let get p pos = 
-  match PosMap.find_opt pos p.grid with
-  | Some state -> state
-  | None -> Unknown
+let get p pos =
+  Map.Poly.find p.grid pos
+  |> Option.value ~default:Unknown
 
-let set p pos state = 
-  let grid = 
+let set p pos state =
+  let grid =
     match state with
-    | Unknown -> PosMap.remove pos p.grid
-    | _ -> PosMap.add pos state p.grid
-  in { p with grid }
+    | Unknown -> Map.Poly.remove p.grid pos
+    | _ -> Map.Poly.set p.grid ~key:pos ~data:state
+  in
+  { p with grid }
 
 let rows p r =
-  List.init p.size (fun x ->
-    get p { x; y = r }
-  )
+  List.init p.size ~f:(fun x ->
+      get p { x; y = r })
 
 let cols p c =
-  List.init p.size (fun y ->
-    get p { x = c; y}
-  )
+  List.init p.size ~f:(fun y ->
+      get p { x = c; y })
 
 let row_clue p r = p.row_clues.(r)
 let col_clue p c = p.col_clues.(c)
 
-let create ~size ~row_clues ~col_clues = 
-  let grid = PosMap.empty in 
+let create ~size ~row_clues ~col_clues =
+  let grid = Map.Poly.empty in
   { size; grid; row_clues; col_clues }

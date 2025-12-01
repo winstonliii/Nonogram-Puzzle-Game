@@ -8,3 +8,5 @@ type generation_params = {
 type generation_result =
   | Success of Puzzle.t * Puzzle.t
   | Failure of string
+
+val generate : generation_params -> generation_result
