@@ -13,3 +13,10 @@ Setup:
 
 Dream Testing:
 dune exec --root . ./nonogram_web.exe
+
+
+TODOS:
+- Solver, UI (reena)
+- Puzzle, Game (paul)
+- Generator, Validator (winston)
+- Write simple and complex tests for all important feature that you implement (everyone)
