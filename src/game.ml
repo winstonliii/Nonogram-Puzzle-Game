@@ -1,3 +1,4 @@
+(*
 open Core
 
 (* Type of user actions. *)
@@ -77,6 +78,7 @@ let is_complete (p : Puzzle.t) : bool =
   loop 0 0
 ;;
 
+(*
 let process_action (g : t) (a : action) : action_result =
   match a with
   | FillCell pos ->
@@ -96,3 +98,5 @@ let process_action (g : t) (a : action) : action_result =
   | Quit ->
 
 ;;
+*)
+*)

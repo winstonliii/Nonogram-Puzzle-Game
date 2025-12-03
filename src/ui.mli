@@ -22,7 +22,7 @@ and button_type =
 
 (* Type representing the UI state. *)
 type ui_state = {
-  game : Game.t;
+  (*game : Game.t;*)
   selected_cell : Puzzle.position option;
   hover_cell : Puzzle.position option;
   show_errors : bool;

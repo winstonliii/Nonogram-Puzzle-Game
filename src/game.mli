@@ -1,3 +1,4 @@
+(*
 (* Type representing game state *)
 type t
 
@@ -40,3 +41,4 @@ type status =
   | InProgress 
   | Won 
   | Checking
+*)
