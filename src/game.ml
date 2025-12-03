@@ -60,3 +60,39 @@ let create (p : Puzzle.t) : t =
 
 let puzzle (a : t) = a.puzzle
 let status (a : t) = a.status
+
+(* Check no unknowns for CheckSolution action *)
+let is_complete (p : Puzzle.t) : bool =
+  let n = Puzzle.size p in
+  let rec loop y x =
+    if y = n then
+      true
+    else if x = n then
+      loop (y + 1) 0
+    else
+      match Puzzle.get p { Puzzle.x = x; y } with
+      | Puzzle.Unknown -> false
+      | _ -> loop y (x + 1)
+  in
+  loop 0 0
+;;
+
+let process_action (g : t) (a : action) : action_result =
+  match a with
+  | FillCell pos ->
+
+  | MarkEmpty pos ->
+
+  | ClearCell pos ->
+
+  | GetHint ->
+
+  | AutoSolve ->
+
+  | CheckSolution ->
+
+  | RestartPuzzle ->
+
+  | Quit ->
+
+;;

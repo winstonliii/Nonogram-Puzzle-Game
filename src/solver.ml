@@ -18,6 +18,7 @@ let compatible_line (known : cell_state list) (candidate : cell_state list) : bo
          | Filled -> phys_equal c Filled
          | Empty -> phys_equal c Empty)
 
+
 let all_placements (RLE runs : clue) (known : cell_state list) :
     cell_state list list =
   let len = List.length known in
@@ -76,5 +77,3 @@ let solve_line clue (Line cells as line) : line =
   | many ->
       Line (intersect_placements many)
 
-
-(*need to propogate and then solver function*)
