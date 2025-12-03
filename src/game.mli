@@ -13,7 +13,7 @@ type action =
   | Quit
 
 type win = {
-  time : int;
+  time : Mtime.span;
   hints : int;
   score : int; (* Maybe we can add time to score from using hints *)
 }
