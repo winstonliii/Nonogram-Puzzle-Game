@@ -2,4 +2,4 @@
  (name nonogram)
  (modules puzzle game generator solver ui validator)
  (modules_without_implementation ui)
- (libraries core))
+ (libraries core mtime mtime.clock.os))

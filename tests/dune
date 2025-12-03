@@ -1,4 +1,4 @@
 (test
  (name tests)
  (modules tests)
- (libraries nonogram core ounit2))
+ (libraries nonogram core ounit2 mtime mtime.clock.os))
