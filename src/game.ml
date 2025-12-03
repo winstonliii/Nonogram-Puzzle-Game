@@ -14,7 +14,7 @@ type action =
 type win = {
   time : Mtime.span;
   hints : int;
-  score : int; (* Maybe we can add time to score from using hints *)
+  score : int;
 }
 
 (* 
@@ -27,15 +27,36 @@ type error =
   | IncompletePuzzle
   | Contradiction of string
 
-(* Result of processing an action. *)
-type action_result =
-  | Success of t
-  | Error of error
-  | GameWon of win
-  | HintProvided of Puzzle.position * Puzzle.cell_state * t
-
 (* Game status. *)
 type status =
   | InProgress 
   | Won 
   | Checking
+
+type t = {
+  puzzle : Puzzle.t;
+  initial_puzzle : Puzzle.t;
+  status : status;
+  hints_used : int;
+  start_time : Mtime.t;
+}
+
+(* Result of processing an action. *)
+type action_result =
+| Success of t
+| Error of error
+| GameWon of win
+| HintProvided of Puzzle.position * Puzzle.cell_state * t
+
+let create (p : Puzzle.t) : t =
+  {
+    puzzle = p;
+    initial_puzzle = p;
+    status = InProgress;
+    hints_used = 0;
+    start_time = Mtime_clock.now ();
+  }
+
+
+let puzzle (a : t) = a.puzzle
+let status (a : t) = a.status
