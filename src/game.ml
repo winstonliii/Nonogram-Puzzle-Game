@@ -1,4 +1,3 @@
-(*
 open Core
 
 (* Type of user actions. *)
@@ -78,14 +77,19 @@ let is_complete (p : Puzzle.t) : bool =
   loop 0 0
 ;;
 
-(*
 let process_action (g : t) (a : action) : action_result =
   match a with
-  | FillCell pos ->
+  | FillCell pos -> 
+    let puzzle' = Puzzle.set g.puzzle pos Puzzle.Filled in
+    Success { g with puzzle = puzzle' }
 
   | MarkEmpty pos ->
+    let puzzle' = Puzzle.set g.puzzle pos Puzzle.Empty in
+    Success { g with puzzle = puzzle' }
 
   | ClearCell pos ->
+    let puzzle' = Puzzle.set g.puzzle pos Puzzle.Unknown in
+    Success { g with puzzle = puzzle' }
 
   | GetHint ->
 
@@ -98,5 +102,3 @@ let process_action (g : t) (a : action) : action_result =
   | Quit ->
 
 ;;
-*)
-*)
