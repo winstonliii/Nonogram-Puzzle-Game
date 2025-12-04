@@ -1,8 +1,9 @@
 (*
+
 open Core
 open OUnit2
-*)
-(* Puzzle Tests *)(*
+
+(* Puzzle Tests *)
 module Puzzle_tests = struct
   let make_puzzle () =
     let size = 2 in
@@ -50,4 +51,5 @@ module Puzzle_tests = struct
     ; "cols simple" >:: test_cols
     ]
 end
+
 *)

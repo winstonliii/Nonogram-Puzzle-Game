@@ -98,7 +98,21 @@ let process_action (g : t) (a : action) : action_result =
     Error (InvalidAction "Auto-solve not completed")
 
   | CheckSolution ->
-    Error (InvalidAction "Correct solution not yet available for comparison")
+  (* uses helpers to get rid of unused variable errors for now *)
+  if not (is_complete g.puzzle) then
+    Error IncompletePuzzle
+  else
+    let now = Mtime_clock.now () in
+    let elapsed = Mtime.span g.start_time now in
+    let win =
+      {
+        time = elapsed;
+        hints = g.hints_used;
+        score = 0;
+      }
+    in
+    GameWon win
+
 
   | RestartPuzzle ->
     let g2 =
