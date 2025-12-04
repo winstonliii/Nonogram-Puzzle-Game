@@ -92,13 +92,25 @@ let process_action (g : t) (a : action) : action_result =
     Success { g with puzzle = puzzle' }
 
   | GetHint ->
+    Error (InvalidAction "Hints not completed yet")
 
   | AutoSolve ->
+    Error (InvalidAction "Auto-solve not completed")
 
   | CheckSolution ->
+    Error (InvalidAction "Correct solution not yet available for comparison")
 
   | RestartPuzzle ->
+    let g2 =
+      {
+        g with
+        puzzle = g.initial_puzzle;
+        status = InProgress;
+        hints_used = 0;
+        start_time = Mtime_clock.now (); (* Some versions online make u keep the same start time if u start over, doing this might not make sense in the context of hints counting for score *)
+      }
+    in
+    Success g2
 
-  | Quit ->
-
+  | Quit -> Success g
 ;;
