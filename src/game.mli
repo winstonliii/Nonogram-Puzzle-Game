@@ -1,4 +1,3 @@
-(*
 (* Type representing game state *)
 type t
 
@@ -41,4 +40,8 @@ type status =
   | InProgress 
   | Won 
   | Checking
-*)
+
+val create : Puzzle.t -> t
+val puzzle : t -> Puzzle.t
+val status : t -> status
+val process_action : t -> action -> action_result

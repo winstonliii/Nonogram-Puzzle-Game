@@ -9,9 +9,21 @@ type position = { x : int; y : int }
 
 type clue = RLE of int list [@@unboxed]
 
+(* Readded to use Map.Make instead of Poly *)
+module Position = struct
+  type t = position
+
+  let compare a b =
+    match Int.compare a.y b.y with
+    | 0 -> Int.compare a.x b.x
+    | n -> n
+end
+
+module PosMap = Stdlib.Map.Make (Position)
+
 type t = {
   size : int;
-  grid : (position, cell_state) Map.Poly.t;
+  grid : cell_state PosMap.t;
   row_clues : clue array;
   col_clues : clue array;
 }
@@ -19,14 +31,15 @@ type t = {
 let size p = p.size
 
 let get p pos =
-  Map.Poly.find p.grid pos
-  |> Option.value ~default:Unknown
+  match PosMap.find_opt pos p.grid with
+  | Some state -> state
+  | None -> Unknown
 
 let set p pos state =
   let grid =
     match state with
-    | Unknown -> Map.Poly.remove p.grid pos
-    | _ -> Map.Poly.set p.grid ~key:pos ~data:state
+    | Unknown -> PosMap.remove pos p.grid
+    | _ -> PosMap.add pos state p.grid
   in
   { p with grid }
 
@@ -42,5 +55,5 @@ let row_clue p r = p.row_clues.(r)
 let col_clue p c = p.col_clues.(c)
 
 let create ~size ~row_clues ~col_clues =
-  let grid = Map.Poly.empty in
+  let grid = PosMap.empty in
   { size; grid; row_clues; col_clues }

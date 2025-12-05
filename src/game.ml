@@ -1,4 +1,3 @@
-(*
 open Core
 
 (* Type of user actions. *)
@@ -78,25 +77,54 @@ let is_complete (p : Puzzle.t) : bool =
   loop 0 0
 ;;
 
-(*
 let process_action (g : t) (a : action) : action_result =
   match a with
-  | FillCell pos ->
+  | FillCell pos -> 
+    let puzzle' = Puzzle.set g.puzzle pos Puzzle.Filled in
+    Success { g with puzzle = puzzle' }
 
   | MarkEmpty pos ->
+    let puzzle' = Puzzle.set g.puzzle pos Puzzle.Empty in
+    Success { g with puzzle = puzzle' }
 
   | ClearCell pos ->
+    let puzzle' = Puzzle.set g.puzzle pos Puzzle.Unknown in
+    Success { g with puzzle = puzzle' }
 
   | GetHint ->
+    Error (InvalidAction "Hints not completed yet")
 
   | AutoSolve ->
+    Error (InvalidAction "Auto-solve not completed")
 
   | CheckSolution ->
+  (* uses helpers to get rid of unused variable errors for now *)
+  if not (is_complete g.puzzle) then
+    Error IncompletePuzzle
+  else
+    let now = Mtime_clock.now () in
+    let elapsed = Mtime.span g.start_time now in
+    let win =
+      {
+        time = elapsed;
+        hints = g.hints_used;
+        score = 0;
+      }
+    in
+    GameWon win
+
 
   | RestartPuzzle ->
+    let g2 =
+      {
+        g with
+        puzzle = g.initial_puzzle;
+        status = InProgress;
+        hints_used = 0;
+        start_time = Mtime_clock.now (); (* Some versions online make u keep the same start time if u start over, doing this might not make sense in the context of hints counting for score *)
+      }
+    in
+    Success g2
 
-  | Quit ->
-
+  | Quit -> Success g
 ;;
-*)
-*)
