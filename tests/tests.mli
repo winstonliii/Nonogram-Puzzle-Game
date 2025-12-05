@@ -6,6 +6,4 @@
 
 (* Tests for game module *)
 
-(* Tests for ui module *)
-
 (* Tests for validator module *)
