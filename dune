@@ -1,4 +1,4 @@
 (executable
  (name nonogram_web)
  (modules nonogram_web)
- (libraries dream nonogram core mtime.clock.os))
+ (libraries dream nonogram core mtime.clock.os lwt))

@@ -16,13 +16,13 @@ dune exec --root . ./nonogram_web.exe
 
 
 TODOS:
-- Solver, UI (reena)
-- Puzzle, Game (paul)
-- Generator, Validator (winston)
+- Push rest of functions and change remove math.poly
 - Write simple and complex tests for all important feature that you implement (everyone)
 - End to end invariant tests (brandon)
 
 
 
+
 Final Demo and Submission:
 - Edge Cases ()
+
