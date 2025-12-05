@@ -10,7 +10,7 @@ type generation_result =
   | Success of t * t
   | Failure of string
 
-let clue_of_cells (cells : cell_state list) : clue =
+  let clue_of_cells (cells : cell_state list) : clue =
   (*  Implement RLE encoding
      - Iterate through cells
      - Count consecutive Filled cells
