@@ -11,7 +11,7 @@ type generation_result =
   | Failure of string
 
 (* Convert a line of cells (row/col) to a clue using RLE.
-    Then counts consecutive filled cells, breaking on empty/unknown cell *)
+   Counts consecutive filled cells, breaking on empty/unknown cell *)
 let clue_of_cells (cells : cell_state list) : clue =
   let rec aux acc current = function
     | [] ->
@@ -46,7 +46,7 @@ let random_solution_matrix (size : int) : cell_state array array =
   m
 
 (* Extract row/col clues from a completed solution matrix.
-  Then reads each as a cell list, then encodes it *)
+   Reads each as a cell list, then encodes it *)
 let clues_from_matrix (m : cell_state array array) :
   clue array * clue array =
 let size = Array.length m in
@@ -62,7 +62,7 @@ let col_clues =
 in
 (row_clues, col_clues)
 
-(* Build puzzle struct based on solution matrix and clues *)
+(* Copy solution matrix into a Puzzle.t record w given clues *)
 let puzzle_from_solution (m : cell_state array array)
     (row_clues : clue array) (col_clues : clue array) : t =
   let size = Array.length m in
