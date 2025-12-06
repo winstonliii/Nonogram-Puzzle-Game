@@ -9,3 +9,4 @@ type validation_result =
 
 val validate : Puzzle.t -> validation_result
 
+val clue_of_cells : Puzzle.cell_state list -> Puzzle.clue

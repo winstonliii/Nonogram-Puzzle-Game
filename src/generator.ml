@@ -13,25 +13,7 @@ type generation_result =
 (* Convert a line of cells (row/col) to a clue using RLE.
    Counts consecutive filled cells, breaking on empty/unknown cell *)
 let clue_of_cells (cells : cell_state list) : clue =
-  let rec aux acc current = function
-    | [] ->
-        let acc =
-          match current with
-          | 0 -> acc
-          | n -> n :: acc
-        in
-        List.rev acc
-    | Filled :: tl ->
-        aux acc (current + 1) tl
-    | (Empty | Unknown) :: tl ->
-        let acc =
-          match current with
-          | 0 -> acc
-          | n -> n :: acc
-        in
-        aux acc 0 tl
-  in
-  RLE (aux [] 0 cells)
+  Validator.clue_of_cells cells
 
 (* Generate random solution grid w Random.bool (50% fill prob) for each cell*)
   (* We can update this later for better results with larger nonograms like 10x10, 15x15! *)
@@ -116,6 +98,7 @@ let generate (params : generation_params) : generation_result =
         else
           let solution_matrix = random_solution_matrix size in
           let row_clues, col_clues = clues_from_matrix solution_matrix in
+
           let puzzle = create ~size ~row_clues ~col_clues in
           match Solver.solve puzzle with
           | Solver.NoSolution ->
@@ -135,5 +118,3 @@ let generate (params : generation_params) : generation_result =
       in
       attempt max_attempts
     )
-
-
