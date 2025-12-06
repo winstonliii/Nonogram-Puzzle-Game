@@ -3,16 +3,17 @@ Nonogram Puzzle Game application with a command-line interface where a player wi
 
 Setup:
 
-``` clone the repository ```
+1. ``` clone the repository ```
 
-``` dune build ```
+2. ``` dune build ```
 
-``` opam install . --deps-only --working-dir ```
+3. ``` opam install . --deps-only --working-dir ```
 
 
 
-Dream Testing:
-dune exec --root . ./nonogram_web.exe
+Launch Dream Frontend:
+
+``` dune exec --root . ./nonogram_web.exe ```
 
 
 TODOS:

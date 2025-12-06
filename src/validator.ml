@@ -6,9 +6,10 @@ type error =
   | ColError of int * string
 
 type validation_result =
-  | Valid
-  | Incomplete
+  | Valid      (* All cells filled AND all clues match *)
+  | Incomplete (* Grid has unknown cells [not empty or filled] but no clue mismatches yet *)
   | Invalid of error list
+
 
 let clue_of_cells (cells : cell_state list) : clue =
   let rec aux acc current = function
@@ -33,6 +34,11 @@ let clue_of_cells (cells : cell_state list) : clue =
 
 let clues_equal (RLE a) (RLE b) = List.equal Int.equal a b
 
+(* Validate puzzle by deriving clues from current grid state
+   and comparing against expected clues.
+   
+   Checks all rows/cols, tracks Unknown cells
+   and clue mismatches to determine if Valid/Incomplete/Invalid. *)
 let validate (p : t) : validation_result =
   let n = size p in
   let has_unknown = ref false in
