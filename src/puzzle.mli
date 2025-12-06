@@ -1,4 +1,3 @@
-
 (* Type representing the state of a cell in the grid *)
 type cell_state =
   | Empty

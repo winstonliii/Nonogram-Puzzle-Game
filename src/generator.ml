@@ -10,8 +10,8 @@ type generation_result =
   | Success of t * t
   | Failure of string
 
-(* Helper function: Convert row/column list of cells to a clue using RLE *)
-(* Increment counter when filled, skip empty/unknown cells, add to acc when done for the row/col clue regardless of nonogram size *)
+(* Convert a line of cells (row/col) to a clue using RLE.
+    Then counts consecutive filled cells, breaking on empty/unknown cell *)
 let clue_of_cells (cells : cell_state list) : clue =
   let rec aux acc current = function
     | [] ->
@@ -33,6 +33,8 @@ let clue_of_cells (cells : cell_state list) : clue =
   in
   RLE (aux [] 0 cells)
 
+(* Generate random solution grid w Random.bool (50% fill prob) for each cell*)
+  (* We can update this later for better results with larger nonograms like 10x10, 15x15! *)
 let random_solution_matrix (size : int) : cell_state array array =
   let m = Array.make_matrix ~dimx:size ~dimy:size Empty in
   for y = 0 to size - 1 do
@@ -43,21 +45,24 @@ let random_solution_matrix (size : int) : cell_state array array =
   done;
   m
 
-  let clues_from_matrix (m : cell_state array array) :
-    clue array * clue array =
-  let size = Array.length m in
-  let row_clues =
-    Array.init size ~f:(fun y ->
-        let row = Array.to_list m.(y) in
-        clue_of_cells row)
-  in
-  let col_clues =
-    Array.init size ~f:(fun x ->
-        let col = List.init size ~f:(fun y -> m.(y).(x)) in
-        clue_of_cells col)
-  in
-  (row_clues, col_clues)
+(* Extract row/col clues from a completed solution matrix.
+  Then reads each as a cell list, then encodes it *)
+let clues_from_matrix (m : cell_state array array) :
+  clue array * clue array =
+let size = Array.length m in
+let row_clues =
+  Array.init size ~f:(fun y ->
+      let row = Array.to_list m.(y) in
+      clue_of_cells row)
+in
+let col_clues =
+  Array.init size ~f:(fun x ->
+      let col = List.init size ~f:(fun y -> m.(y).(x)) in
+      clue_of_cells col)
+in
+(row_clues, col_clues)
 
+(* Build puzzle struct based on solution matrix and clues *)
 let puzzle_from_solution (m : cell_state array array)
     (row_clues : clue array) (col_clues : clue array) : t =
   let size = Array.length m in
@@ -71,6 +76,7 @@ let puzzle_from_solution (m : cell_state array array)
   done;
   !p_ref
 
+(* Verify solver output matches correct solution *)
 let puzzle_matches_matrix (p : t) (m : cell_state array array) : bool =
   let size_p = size p in
   let size_m = Array.length m in
@@ -88,6 +94,13 @@ let puzzle_matches_matrix (p : t) (m : cell_state array array) : bool =
 
 let max_attempts = 100
 
+(* Main Generator: attempts to generate puzzle w unique solution.
+  
+   Algorithm: Gen random solution -> derive clues -> verify solver
+   finds same solution | Retry if unsolvable, incomplete, mult solutions, 
+   or solver solution mismatch
+  
+   Returns tuple of two Puzzle.t records: the solution and blank puzzle w clues *)
 let generate (params : generation_params) : generation_result =
   if params.rows <> params.cols then
     Failure "Only square puzzles are supported (rows = cols)."
