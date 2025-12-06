@@ -6,9 +6,6 @@ type action =
   | FillCell of Puzzle.position
   | MarkEmpty of Puzzle.position
   | ClearCell of Puzzle.position
-  | GetHint
-  | AutoSolve
-  | CheckSolution
   | RestartPuzzle
   | Quit
 
@@ -18,11 +15,7 @@ type win = {
   score : int;
 }
 
-(* 
-InvalidAction for actions that cannot be done (hint with no selection),
-IncompletePuzzle respond as incomplete for correct but in progress CheckSolution,
-Contradiction responds with the issue for incorrect CheckSolution
-*)
+(* Errors that game-related operations may report. *)
 type error =
   | InvalidAction of string
   | IncompletePuzzle

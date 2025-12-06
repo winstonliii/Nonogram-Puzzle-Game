@@ -77,19 +77,10 @@ module Game_tests = struct
         assert_failure "expected Success from FillCell"
   ;;
 
-  let test_check_solution_incomplete _ =
-    let g = make_game () in
-    match Game.process_action g Game.CheckSolution with
-    | Game.Error Game.IncompletePuzzle -> ()
-    | _ ->
-        assert_failure "expected IncompletePuzzle error"
-  ;;
-
   let series =
     "Game tests" >::: 
     [ "initial status" >:: test_initial_status
     ; "fill cell changes board" >:: test_fill_cell_updates_puzzle
-    ; "check solution incomplete" >:: test_check_solution_incomplete
     ]
 end
 

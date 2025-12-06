@@ -1,13 +1,8 @@
-open Core
-
 (* Type of user actions. *)
 type action =
   | FillCell of Puzzle.position
   | MarkEmpty of Puzzle.position
   | ClearCell of Puzzle.position
-  | GetHint
-  | AutoSolve
-  | CheckSolution
   | RestartPuzzle
   | Quit
 
@@ -17,11 +12,7 @@ type win = {
   score : int;
 }
 
-(* 
-InvalidAction for actions that cannot be done (hint with no selection),
-IncompletePuzzle respond as incomplete for correct but in progress CheckSolution,
-Contradiction responds with the issue for incorrect CheckSolution
-*)
+(* Errors that game-related operations may report. *)
 type error =
   | InvalidAction of string
   | IncompletePuzzle
@@ -37,8 +28,8 @@ type t = {
   puzzle : Puzzle.t;
   initial_puzzle : Puzzle.t;
   status : status;
-  hints_used : int;
-  start_time : Mtime.t;
+  (*hints_used : int;
+  start_time : Mtime.t;*)
 }
 
 (* Result of processing an action. *)
@@ -53,29 +44,13 @@ let create (p : Puzzle.t) : t =
     puzzle = p;
     initial_puzzle = p;
     status = InProgress;
-    hints_used = 0;
-    start_time = Mtime_clock.now ();
+    (* hints_used = 0;
+    start_time = Mtime_clock.now (); *)
   }
 
 
 let puzzle (a : t) = a.puzzle
 let status (a : t) = a.status
-
-(* Check no unknowns for CheckSolution action *)
-let is_complete (p : Puzzle.t) : bool =
-  let n = Puzzle.size p in
-  let rec loop y x =
-    if y = n then
-      true
-    else if x = n then
-      loop (y + 1) 0
-    else
-      match Puzzle.get p { Puzzle.x = x; y } with
-      | Puzzle.Unknown -> false
-      | _ -> loop y (x + 1)
-  in
-  loop 0 0
-;;
 
 let process_action (g : t) (a : action) : action_result =
   match a with
@@ -91,37 +66,14 @@ let process_action (g : t) (a : action) : action_result =
     let puzzle' = Puzzle.set g.puzzle pos Puzzle.Unknown in
     Success { g with puzzle = puzzle' }
 
-  | GetHint ->
-    Error (InvalidAction "Hints not completed yet")
-
-  | AutoSolve ->
-    Error (InvalidAction "Auto-solve not completed")
-
-  | CheckSolution ->
-  (* uses helpers to get rid of unused variable errors for now *)
-  if not (is_complete g.puzzle) then
-    Error IncompletePuzzle
-  else
-    let now = Mtime_clock.now () in
-    let elapsed = Mtime.span g.start_time now in
-    let win =
-      {
-        time = elapsed;
-        hints = g.hints_used;
-        score = 0;
-      }
-    in
-    GameWon win
-
-
   | RestartPuzzle ->
     let g2 =
       {
         g with
         puzzle = g.initial_puzzle;
         status = InProgress;
-        hints_used = 0;
-        start_time = Mtime_clock.now (); (* Some versions online make u keep the same start time if u start over, doing this might not make sense in the context of hints counting for score *)
+        (*hints_used = 0;
+        start_time = Mtime_clock.now (); *)(* Some versions online make u keep the same start time if u start over, doing this might not make sense in the context of hints counting for score *)
       }
     in
     Success g2
