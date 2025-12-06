@@ -9,21 +9,23 @@ respective unit tests.
 Implemented the puzzle generator which creates random Nonogram puzzles with guaranteed unique solutions. The generator works by first creating a random solution matrix for the specified grid size, then automatically deriving row and column clues from the solution using RLE. To ensure proper puzzle creation, the generator integrates with the solver module to verify that each generated puzzle has exactly one solution. If a puzzle has no solution or multiple solutions, the generator automatically retries with a new random grid, attempting up to a max of 100 times (possibly changed later as we see how efficient this is with larger puzzle sizes like 15x15) before reporting failure. Upon successful generation, it returns both the complete solution puzzle and a blank puzzle with clues ready for user to play with. 
 Also implemented the validator module which handles complete solution validation against row and column clues. The validator returns one of the results: Valid when all cells are filled and match the clues, Incomplete when the grid still has unknown cells but no contradictions exist, or Invalid with a list of specific errors when clues are violated. The module also provides error reporting through RowError and ColError variants that identify exactly which rows or columns fail validation. Additionally, the clue_of_cells function derives clues from any sequence of cell states, which is shared with the generator module to ensure consistent clue encoding throughout the application.
 
-
+Paul checkpoint progress:
+I worked on the core Puzzle module and the Game module.  For Puzzle, I set up the puzzle representation using a map and added operations get, set, rows, cols, and clue lookup.  This is for the solver, validator, generator, and UI to depend on.  For the Game module, I added (fill, empty, clear, restart, quit) and the process_action function that updates the puzzle.  I also set up the game result types (Success, Error, GameWon, HintProvided) even though some of these will be used more later in the project when we connect scoring, timing, and hint logic.  I removed some parts from the game state for now and will add them back when we add in timer + score.  Right now the Game module only handles the basic puzzle updates, and the web frontend is still using its own JS code for hint, autosolve, and check until we hook them into the OCaml side for the final.
 
 What is working:
 - Puzzle Data Structure: Immutable puzzle representation with PosMap, cell states (Empty/Filled/Unknown), position-based access
 - Solver Algorithm: Line solver with constraint propagation, backtracking search, unique/multiple solution detection
 - Puzzle Generator: Random puzzle generation for 5x5 with uniqueness verification
 - Validator Complete: Validation of puzzles against clues with detailed error reporting
-- Game State Management: FillCell, MarkEmpty, ClearCell, RestartPuzzle, CheckSolution (completion check working)
 - Web UI: Interactive grid, clue display, timer, action logging, hint/autosolve/check/restart buttons
 - Unit Tests: Coverage for Puzzle, Game, Generator, Validator, and Solver modules
+- Game State Management: basic actions (fill cell, mark empty, clear, restart, quit) through the Game module.  Scoring and timing are planned for final but not connected yet.
 
 What is not working:
 - 10x10 and 15x15 in UI is currently disabled: While our backend should fully supports these sizes, our web UI is currently limited to 5x5 only as we continue to develop our UI. 
 - GetHint in Game module currently is a placeholder: since we are working on frontend features that allow detection of what cell the mouse is currently on and the ability for single cell select, row/col select feature, and drag select. While this is not one of our core features in the game, we hope to accomplish these obejctives in the final submission.
 - Score calculation: Still in progress. Always returns score = 0 as we want to integrate timer and hint usage into the game score calculation as well. This is also not one of our core features in the game, we hope to accomplish these obejctives in the final submission. 
+- Full Game timing and scoring: we set up types for win/time/hints but we have not plugged them into the UI or solver yet. These will be added for the final.
 
 Setup:
 
@@ -38,10 +40,6 @@ Setup:
 Launch Dream Frontend:
 
 ``` dune exec --root . ./nonogram_web.exe ```
-
-
-TODOS:
-
 
 
 
