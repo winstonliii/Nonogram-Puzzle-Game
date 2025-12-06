@@ -296,7 +296,7 @@ let random_solution_matrix (size : int) : cell_state array array =
   <span data-count="2">l</span>et m = Array.make_matrix ~dimx:size ~dimy:size Empty in
   <span data-count="2">f</span>or y = 0 to size - 1 do
     <span data-count="10">f</span>or x = 0 to size - 1 do
-      <span data-count="50">l</span>et v = if Random.bool () then <span data-count="24">F</span>illed else <span data-count="26">E</span>mpty in
+      <span data-count="50">l</span>et v = if Random.bool () then <span data-count="23">F</span>illed else <span data-count="27">E</span>mpty in
       m.(y).(x) &lt;- v
     done
   done;

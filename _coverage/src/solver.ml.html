@@ -415,119 +415,119 @@ type line = Line of cell_state list [@@unboxed]
 
 
 let compatible_line (known : cell_state list) (candidate : cell_state list) : bool =
-  <span data-count="879">L</span>ist.zip_exn known candidate
-  |&gt; <span data-count="879">L</span>ist.for_all ~f:(fun (k, c) -&gt;
-         <span data-count="2771">m</span>atch k with
-         | <span data-count="1110">U</span>nknown -&gt; true
-         | <span data-count="730">F</span>illed -&gt; phys_equal c Filled
-         | <span data-count="931">E</span>mpty -&gt; phys_equal c Empty)
+  <span data-count="815">L</span>ist.zip_exn known candidate
+  |&gt; <span data-count="815">L</span>ist.for_all ~f:(fun (k, c) -&gt;
+         <span data-count="2577">m</span>atch k with
+         | <span data-count="866">U</span>nknown -&gt; true
+         | <span data-count="766">F</span>illed -&gt; phys_equal c Filled
+         | <span data-count="945">E</span>mpty -&gt; phys_equal c Empty)
 
 
 let all_placements (RLE runs : clue) (known : cell_state list) :
     cell_state list list =
-  <span data-count="247">l</span>et len = List.length known in
-  <span data-count="247">m</span>atch runs with
-  | <span data-count="16">[</span>] -&gt;
-      let candidate = List.init len ~f:(fun _ -&gt; <span data-count="80">E</span>mpty) in
-      <span data-count="16">i</span>f compatible_line known candidate then <span data-count="16">[</span> candidate ] else <span data-count="0">[</span>]
-  | <span data-count="231">_</span> -&gt;
+  <span data-count="227">l</span>et len = List.length known in
+  <span data-count="227">m</span>atch runs with
+  | <span data-count="20">[</span>] -&gt;
+      let candidate = List.init len ~f:(fun _ -&gt; <span data-count="100">E</span>mpty) in
+      <span data-count="20">i</span>f compatible_line known candidate then <span data-count="20">[</span> candidate ] else <span data-count="0">[</span>]
+  | <span data-count="207">_</span> -&gt;
       let rec min_len = function
-        | <span data-count="489">[</span>] -&gt; 0
-        | <span data-count="116">[</span> x ] -&gt; x
+        | <span data-count="493">[</span>] -&gt; 0
+        | <span data-count="126">[</span> x ] -&gt; x
         | <span data-count="0">x</span> :: xs -&gt; x + 1 + min_le<span data-count="0">n</span> xs
       in
       let rec place runs i acc =
-        <span data-count="1468">m</span>atch runs with
-        | <span data-count="863">[</span>] -&gt;
+        <span data-count="1414">m</span>atch runs with
+        | <span data-count="795">[</span>] -&gt;
             let line = Array.create ~len Empty in
-            <span data-count="863">L</span>ist.iter acc ~f:(fun (s, e) -&gt;
-                <span data-count="1301">f</span>or j = s to e do
-                  <span data-count="1823">l</span>ine.(j) &lt;- Filled
+            <span data-count="795">L</span>ist.iter acc ~f:(fun (s, e) -&gt;
+                <span data-count="1295">f</span>or j = s to e do
+                  <span data-count="1643">l</span>ine.(j) &lt;- Filled
                 done);
-            <span data-count="863">l</span>et candidate = Array.to_list line in
-            <span data-count="863">i</span>f compatible_line known candidate then <span data-count="374">[</span> candidate ] else <span data-count="489">[</span>]
-        | <span data-count="605">r</span>un_len :: rest -&gt;
+            <span data-count="795">l</span>et candidate = Array.to_list line in
+            <span data-count="795">i</span>f compatible_line known candidate then <span data-count="322">[</span> candidate ] else <span data-count="473">[</span>]
+        | <span data-count="619">r</span>un_len :: rest -&gt;
             let remaining_min = min_len rest in
-            <span data-count="605">l</span>et max_start = len - remaining_min - run_len in
+            <span data-count="619">l</span>et max_start = len - remaining_min - run_len in
             let rec try_start s =
-              <span data-count="1842">i</span>f s &gt; max_start then <span data-count="605">[</span>]
+              <span data-count="1826">i</span>f s &gt; max_start then <span data-count="619">[</span>]
               else
-                <span data-count="1237">l</span>et acc' = (s, s + run_len - 1) :: acc in
+                <span data-count="1207">l</span>et acc' = (s, s + run_len - 1) :: acc in
                 let here = place rest (s + run_len + 1) acc' in
-                <span data-count="1237">l</span>et more = try_start (s + 1) in
-                <span data-count="1237">h</span>ere @ more
+                <span data-count="1207">l</span>et more = try_start (s + 1) in
+                <span data-count="1207">h</span>ere @ more
             in
             try_start i
       in
       place runs 0 []
 
 let intersect_placements (placements : cell_state list list) : cell_state list =
-  <span data-count="35">m</span>atch placements with
+  <span data-count="30">m</span>atch placements with
   | <span data-count="0">[</span>] -&gt; []
-  | <span data-count="35">f</span>irst :: rest -&gt;
+  | <span data-count="30">f</span>irst :: rest -&gt;
       let arr = Array.of_list first in
-      <span data-count="35">L</span>ist.iter rest ~f:(fun p -&gt;
-          <span data-count="73">L</span>ist.iteri p ~f:(fun i c -&gt;
-              <span data-count="355">i</span>f not (phys_equa<span data-count="355">l</span> arr.(i) c) then <span data-count="228">a</span>rr.(i) &lt;- Unknown));
-      <span data-count="35">A</span>rray.to_list arr
+      <span data-count="30">L</span>ist.iter rest ~f:(fun p -&gt;
+          <span data-count="59">L</span>ist.iteri p ~f:(fun i c -&gt;
+              <span data-count="285">i</span>f not (phys_equa<span data-count="285">l</span> arr.(i) c) then <span data-count="178">a</span>rr.(i) &lt;- Unknown));
+      <span data-count="30">A</span>rray.to_list arr
 
 let solve_line clue (Line cells as line) : line =
-  <span data-count="125">l</span>et placements = all_placements clue cells in
-  <span data-count="125">m</span>atch placements with
+  <span data-count="115">l</span>et placements = all_placements clue cells in
+  <span data-count="115">m</span>atch placements with
   | <span data-count="0">[</span>] -&gt;
       line
-  | <span data-count="90">[</span> single ] -&gt;
+  | <span data-count="85">[</span> single ] -&gt;
       Line single
-  | <span data-count="35">m</span>any -&gt;
-      Line (intersect_placement<span data-count="35">s</span> many)
+  | <span data-count="30">m</span>any -&gt;
+      Line (intersect_placement<span data-count="30">s</span> many)
 
 let propagate (p0 : t) :
     [ `Ok of t | `Contradiction ] =
   <span data-count="5">l</span>et n = size p0 in
   <span data-count="5">l</span>et rec step p =
-    <span data-count="13">l</span>et changed = ref false in
+    <span data-count="12">l</span>et changed = ref false in
     let ok = ref true in
     let p_ref = ref p in
 
     for r = 0 to n - 1 do
-      <span data-count="61">i</span>f !ok then <span data-count="61">(</span>
+      <span data-count="56">i</span>f !ok then <span data-count="56">(</span>
         let row_cells = rows !p_ref r in
-        <span data-count="61">l</span>et clue = row_clue !p_ref r in
-        <span data-count="61">l</span>et placements = all_placements clue row_cells in
-        <span data-count="61">i</span>f List.is_empty placements then <span data-count="0">o</span>k := false
+        <span data-count="56">l</span>et clue = row_clue !p_ref r in
+        <span data-count="56">l</span>et placements = all_placements clue row_cells in
+        <span data-count="56">i</span>f List.is_empty placements then <span data-count="0">o</span>k := false
         else
-          <span data-count="61">l</span>et Line new_row = solve_line clue (Line row_cells) in
-          <span data-count="61">f</span>or x = 0 to n - 1 do
-            <span data-count="293">l</span>et pos = { x; y = r } in
+          <span data-count="56">l</span>et Line new_row = solve_line clue (Line row_cells) in
+          <span data-count="56">f</span>or x = 0 to n - 1 do
+            <span data-count="268">l</span>et pos = { x; y = r } in
             let old_c = get !p_ref pos in
-            <span data-count="293">l</span>et new_c = List.nth_exn new_row x in
-            <span data-count="293">i</span>f not (phys_equa<span data-count="293">l</span> old_c new_c) then <span data-count="26">(</span>
-              p_ref := se<span data-count="26">t</span> !p_ref pos new_c;
+            <span data-count="268">l</span>et new_c = List.nth_exn new_row x in
+            <span data-count="268">i</span>f not (phys_equa<span data-count="268">l</span> old_c new_c) then <span data-count="30">(</span>
+              p_ref := se<span data-count="30">t</span> !p_ref pos new_c;
               changed := true)
           done)
     done;
 
     if !ok then
-      <span data-count="13">f</span>or c = 0 to n - 1 do
-        <span data-count="61">i</span>f !ok then <span data-count="61">(</span>
+      <span data-count="12">f</span>or c = 0 to n - 1 do
+        <span data-count="56">i</span>f !ok then <span data-count="56">(</span>
           let col_cells = cols !p_ref c in
-          <span data-count="61">l</span>et clue = col_clue !p_ref c in
-          <span data-count="61">l</span>et placements = all_placements clue col_cells in
-          <span data-count="61">i</span>f List.is_empty placements then <span data-count="0">o</span>k := false
+          <span data-count="56">l</span>et clue = col_clue !p_ref c in
+          <span data-count="56">l</span>et placements = all_placements clue col_cells in
+          <span data-count="56">i</span>f List.is_empty placements then <span data-count="0">o</span>k := false
           else
-            <span data-count="61">l</span>et Line new_col = solve_line clue (Line col_cells) in
-            <span data-count="61">f</span>or y = 0 to n - 1 do
-              <span data-count="293">l</span>et pos = { x = c; y } in
+            <span data-count="56">l</span>et Line new_col = solve_line clue (Line col_cells) in
+            <span data-count="56">f</span>or y = 0 to n - 1 do
+              <span data-count="268">l</span>et pos = { x = c; y } in
               let old_c = get !p_ref pos in
-              <span data-count="293">l</span>et new_c = List.nth_exn new_col y in
-              <span data-count="293">i</span>f not (phys_equa<span data-count="293">l</span> old_c new_c) then <span data-count="35">(</span>
-                p_ref := se<span data-count="35">t</span> !p_ref pos new_c;
+              <span data-count="268">l</span>et new_c = List.nth_exn new_col y in
+              <span data-count="268">i</span>f not (phys_equa<span data-count="268">l</span> old_c new_c) then <span data-count="31">(</span>
+                p_ref := se<span data-count="31">t</span> !p_ref pos new_c;
                 changed := true)
             done)
       done;
 
-    <span data-count="13">i</span>f not !ok then <span data-count="0">`</span>Contradiction
-    else <span data-count="13">i</span>f !changed then <span data-count="8">s</span>tep !p_ref
+    <span data-count="12">i</span>f not !ok then <span data-count="0">`</span>Contradiction
+    else <span data-count="12">i</span>f !changed then <span data-count="7">s</span>tep !p_ref
     else <span data-count="5">`</span>Ok !p_ref
   in
   step p0
@@ -536,9 +536,9 @@ let has_unknown (p : t) : bool =
   <span data-count="5">l</span>et n = size p in
   <span data-count="5">l</span>et found = ref false in
   for y = 0 to n - 1 do
-    <span data-count="23">i</span>f not !found then <span data-count="19">(</span>
+    <span data-count="23">i</span>f not !found then <span data-count="21">(</span>
       let row = rows p y in
-      <span data-count="19">i</span>f List.exists row ~f:(fun c -&gt; <span data-count="85">p</span>hys_equal c Unknown) then
+      <span data-count="21">i</span>f List.exists row ~f:(fun c -&gt; <span data-count="97">p</span>hys_equal c Unknown) then
         <span data-count="1">f</span>ound := true)
   done;
   !found
@@ -549,10 +549,10 @@ let choose_unknown (p : t) : position option =
   for y = 0 to n - 1 do
     <span data-count="5">f</span>or x = 0 to n - 1 do
       <span data-count="25">m</span>atch !result with
-      | <span data-count="24">S</span>ome _ -&gt; ()
-      | <span data-count="1">N</span>one -&gt;
+      | <span data-count="12">S</span>ome _ -&gt; ()
+      | <span data-count="13">N</span>one -&gt;
           let pos = { x; y } in
-          if phys_equal (ge<span data-count="1">t</span> p pos) Unknown then
+          if phys_equal (ge<span data-count="13">t</span> p pos) Unknown then
             <span data-count="1">r</span>esult := Some pos
     done
   done;

@@ -77,12 +77,48 @@ module Game_tests = struct
         assert_failure "expected Success from FillCell"
   ;;
 
+  let test_other_actions_update_and_reset _ =
+    let g0 = make_game () in
+    let pos : Puzzle.position = { x = 1; y = 1 } in
+  
+    let g1 =
+      match Game.process_action g0 (Game.MarkEmpty pos) with
+      | Game.Success g' -> g'
+      | _ -> assert_failure "mark empty failed"
+    in
+    assert_equal Puzzle.Empty (Puzzle.get (Game.puzzle g1) pos);
+  
+    let g2 =
+      match Game.process_action g1 (Game.ClearCell pos) with
+      | Game.Success g' -> g'
+      | _ -> assert_failure "clear failed"
+    in
+    assert_equal Puzzle.Unknown (Puzzle.get (Game.puzzle g2) pos);
+  
+    let g3 =
+      match Game.process_action g2 Game.RestartPuzzle with
+      | Game.Success g' -> g'
+      | _ -> assert_failure "restart failed"
+    in
+    assert_equal Puzzle.Unknown (Puzzle.get (Game.puzzle g3) pos);
+  
+    let g4 =
+      match Game.process_action g3 Game.Quit with
+      | Game.Success g' -> g'
+      | _ -> assert_failure "quit failed"
+    in
+    assert_equal (Game.puzzle g3) (Game.puzzle g4)
+  ;;
+  
+
   let series =
     "Game tests" >::: 
     [ "initial status" >:: test_initial_status
     ; "fill cell changes board" >:: test_fill_cell_updates_puzzle
+    ; "other actions update and reset" >:: test_other_actions_update_and_reset
     ]
 end
+
 
 
 (* Generator Tests *)
