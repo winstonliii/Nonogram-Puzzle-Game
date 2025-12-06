@@ -1,7 +1,5 @@
-(*
-
-open Core
 open OUnit2
+open Nonogram
 
 (* Puzzle Tests *)
 module Puzzle_tests = struct
@@ -52,4 +50,54 @@ module Puzzle_tests = struct
     ]
 end
 
-*)
+
+(* Game Tests *)
+module Game_tests = struct
+  let make_game () =
+    let size = 2 in
+    let row_clues = [| Puzzle.RLE [1]; Puzzle.RLE [1] |] in
+    let col_clues = [| Puzzle.RLE [1]; Puzzle.RLE [1] |] in
+    let p = Puzzle.create ~size ~row_clues ~col_clues in
+    Game.create p
+  ;;
+
+  let test_initial_status _ =
+    let g = make_game () in
+    assert_equal Game.InProgress (Game.status g)
+  ;;
+
+  let test_fill_cell_updates_puzzle _ =
+    let g = make_game () in
+    let pos : Puzzle.position = { x = 0; y = 0 } in
+    match Game.process_action g (Game.FillCell pos) with
+    | Game.Success g2 ->
+        let p2 = Game.puzzle g2 in
+        assert_equal Puzzle.Filled (Puzzle.get p2 pos)
+    | _ ->
+        assert_failure "expected Success from FillCell"
+  ;;
+
+  let test_check_solution_incomplete _ =
+    let g = make_game () in
+    match Game.process_action g Game.CheckSolution with
+    | Game.Error Game.IncompletePuzzle -> ()
+    | _ ->
+        assert_failure "expected IncompletePuzzle error"
+  ;;
+
+  let series =
+    "Game tests" >::: 
+    [ "initial status" >:: test_initial_status
+    ; "fill cell changes board" >:: test_fill_cell_updates_puzzle
+    ; "check solution incomplete" >:: test_check_solution_incomplete
+    ]
+end
+
+let suite =
+  "All tests" >::: [
+    Puzzle_tests.series;
+    Game_tests.series;
+  ]
+
+let () =
+  run_test_tt_main suite
