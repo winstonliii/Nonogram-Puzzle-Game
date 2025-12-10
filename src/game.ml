@@ -8,7 +8,7 @@ type action =
 
 type win = {
   time : Mtime.span;
-  hints : int;
+  num_hints : int;
   score : int;
 }
 
