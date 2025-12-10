@@ -52,7 +52,7 @@ let puzzle_from_solution (m : cell_state array array)
   let p_ref = ref p in
   for y = 0 to size - 1 do
     for x = 0 to size - 1 do
-      let pos = { x; y } in
+      let pos = Position.{ x; y } in
       p_ref := set !p_ref pos m.(y).(x)
     done
   done;
@@ -68,7 +68,7 @@ let puzzle_matches_matrix (p : t) (m : cell_state array array) : bool =
     for y = 0 to size_p - 1 do
       for x = 0 to size_p - 1 do
         let expected = m.(y).(x) in
-        let actual = get p { x; y } in
+        let actual = get p Position.{ x; y } in
         if not (phys_equal expected actual) then ok := false
       done
     done;

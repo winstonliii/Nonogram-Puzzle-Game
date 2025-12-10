@@ -5,7 +5,7 @@ type cell_state =
   | Unknown
 
 (* Type representing a position on the grid. *)
-type position = { x : int; y : int }
+type position = Position.t
 
 (* Type representing a clue sequence for a row or column.
     List of integers indicating consecutive filled cells.

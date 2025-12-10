@@ -94,7 +94,7 @@ let propagate (p0 : t) :
         else
           let Line new_row = solve_line clue (Line row_cells) in
           for x = 0 to n - 1 do
-            let pos = { x; y = r } in
+            let pos = Position.{ x; y = r } in
             let old_c = get !p_ref pos in
             let new_c = List.nth_exn new_row x in
             if not (phys_equal old_c new_c) then (
@@ -113,7 +113,7 @@ let propagate (p0 : t) :
           else
             let Line new_col = solve_line clue (Line col_cells) in
             for y = 0 to n - 1 do
-              let pos = { x = c; y } in
+              let pos = Position.{ x = c; y } in
               let old_c = get !p_ref pos in
               let new_c = List.nth_exn new_col y in
               if not (phys_equal old_c new_c) then (
@@ -147,7 +147,7 @@ let choose_unknown (p : t) : position option =
       match !result with
       | Some _ -> ()
       | None ->
-          let pos = { x; y } in
+          let pos = Position.{ x; y } in
           if phys_equal (get p pos) Unknown then
             result := Some pos
     done

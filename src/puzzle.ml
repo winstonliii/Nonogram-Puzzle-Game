@@ -8,7 +8,7 @@ type cell_state =
 type clue = RLE of int list [@@unboxed]
 
 module Position = Position
-module PosMap = Core.Map.Make(Position)
+module PosMap = Map.Make (Position)
 
 type position = Position.t
 
@@ -22,15 +22,15 @@ type t = {
 let size p = p.size
 
 let get p pos =
-  match PosMap.find_opt pos p.grid with
+  match Map.find p.grid pos with
   | Some state -> state
   | None -> Unknown
 
 let set p pos state =
   let grid =
     match state with
-    | Unknown -> PosMap.remove pos p.grid
-    | _ -> PosMap.add pos state p.grid
+    | Unknown -> Map.remove p.grid pos
+    | _ -> Map.set p.grid ~key:pos ~data:state
   in
   { p with grid }
 
