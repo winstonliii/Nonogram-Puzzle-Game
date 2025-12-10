@@ -5,21 +5,12 @@ type cell_state =
   | Filled
   | Unknown
 
-type position = { x : int; y : int }
-
 type clue = RLE of int list [@@unboxed]
 
-(* Readded to use Map.Make instead of Poly *)
-module Position = struct
-  type t = position
+module Position = Position
+module PosMap = Core.Map.Make(Position)
 
-  let compare a b =
-    match Int.compare a.y b.y with
-    | 0 -> Int.compare a.x b.x
-    | n -> n
-end
-
-module PosMap = Stdlib.Map.Make (Position)
+type position = Position.t
 
 type t = {
   size : int;
@@ -45,11 +36,11 @@ let set p pos state =
 
 let rows p r =
   List.init p.size ~f:(fun x ->
-      get p { x; y = r })
+      get p Position.{ x; y = r })
 
 let cols p c =
   List.init p.size ~f:(fun y ->
-      get p { x = c; y })
+      get p Position.{ x = c; y })
 
 let row_clue p r = p.row_clues.(r)
 let col_clue p c = p.col_clues.(c)
