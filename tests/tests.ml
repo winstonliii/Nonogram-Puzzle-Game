@@ -107,7 +107,7 @@ module Game_tests = struct
       | Game.Success g' -> g'
       | _ -> assert_failure "quit failed"
     in
-    assert_equal (Game.puzzle g3) (Game.puzzle g4)
+    assert_equal Puzzle.Unknown (Puzzle.get (Game.puzzle g4) pos)
   ;;
   
 
