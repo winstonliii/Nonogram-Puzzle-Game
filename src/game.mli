@@ -3,15 +3,13 @@ type t
 
 (* Type of user actions. *)
 type action =
-  | FillCell of Puzzle.position
-  | MarkEmpty of Puzzle.position
-  | ClearCell of Puzzle.position
+  | UpdateCell of { pos : Puzzle.position ; new_state : Puzzle.cell_state }
   | RestartPuzzle
   | Quit
 
 type win = {
   time : Mtime.span;
-  hints : int;
+  num_hints : int;
   score : int;
 }
 

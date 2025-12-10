@@ -69,7 +69,7 @@ module Game_tests = struct
   let test_fill_cell_updates_puzzle _ =
     let g = make_game () in
     let pos : Puzzle.position = { x = 0; y = 0 } in
-    match Game.process_action g (Game.FillCell pos) with
+    match Game.process_action g (Game.UpdateCell { pos; new_state = Puzzle.Filled }) with
     | Game.Success g2 ->
         let p2 = Game.puzzle g2 in
         assert_equal Puzzle.Filled (Puzzle.get p2 pos)
@@ -82,18 +82,18 @@ module Game_tests = struct
     let pos : Puzzle.position = { x = 1; y = 1 } in
   
     let g1 =
-      match Game.process_action g0 (Game.MarkEmpty pos) with
+      match Game.process_action g0 (Game.UpdateCell { pos; new_state = Puzzle.Empty }) with
       | Game.Success g' -> g'
       | _ -> assert_failure "mark empty failed"
     in
     assert_equal Puzzle.Empty (Puzzle.get (Game.puzzle g1) pos);
   
     let g2 =
-      match Game.process_action g1 (Game.ClearCell pos) with
+      match Game.process_action g1 (Game.UpdateCell { pos; new_state = Puzzle.Unknown }) with
       | Game.Success g' -> g'
       | _ -> assert_failure "clear failed"
     in
-    assert_equal Puzzle.Unknown (Puzzle.get (Game.puzzle g2) pos);
+    assert_equal Puzzle.Unknown (Puzzle.get (Game.puzzle g2) pos);  
   
     let g3 =
       match Game.process_action g2 Game.RestartPuzzle with

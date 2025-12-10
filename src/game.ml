@@ -1,8 +1,6 @@
 (* Type of user actions. *)
 type action =
-  | FillCell of Puzzle.position
-  | MarkEmpty of Puzzle.position
-  | ClearCell of Puzzle.position
+  | UpdateCell of { pos : Puzzle.position ; new_state : Puzzle.cell_state }
   | RestartPuzzle
   | Quit
 
@@ -54,16 +52,8 @@ let status (a : t) = a.status
 
 let process_action (g : t) (a : action) : action_result =
   match a with
-  | FillCell pos -> 
-    let puzzle' = Puzzle.set g.puzzle pos Puzzle.Filled in
-    Success { g with puzzle = puzzle' }
-
-  | MarkEmpty pos ->
-    let puzzle' = Puzzle.set g.puzzle pos Puzzle.Empty in
-    Success { g with puzzle = puzzle' }
-
-  | ClearCell pos ->
-    let puzzle' = Puzzle.set g.puzzle pos Puzzle.Unknown in
+  | UpdateCell { pos; new_state } ->
+    let puzzle' = Puzzle.set g.puzzle pos new_state in
     Success { g with puzzle = puzzle' }
 
   | RestartPuzzle ->
