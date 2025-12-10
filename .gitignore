@@ -35,3 +35,5 @@ _build/
 # Logs
 *.log
 
+# Coverage
+_coverage/*
