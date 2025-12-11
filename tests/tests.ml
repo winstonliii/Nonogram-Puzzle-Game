@@ -40,6 +40,21 @@ module Puzzle_tests = struct
     assert_equal [Puzzle.Unknown; Puzzle.Empty] col
   ;;
 
+  let test_row_and_col_clues _ =
+    let p = make_puzzle () in
+    assert_equal (Puzzle.RLE [1]) (Puzzle.row_clue p 0);
+    assert_equal (Puzzle.RLE [1]) (Puzzle.col_clue p 1)
+  ;;
+
+  let test_fold_rows_counts_cells _ =
+    let p = make_puzzle () in
+    let total_cells =
+      Puzzle.fold_rows p ~init:0 ~f:(fun acc _ row ->
+        acc + List.length row)
+    in
+    assert_equal 4 total_cells
+  ;;
+
   let series =
     "Puzzle tests" >::: 
     [ "size" >:: test_size
@@ -47,6 +62,8 @@ module Puzzle_tests = struct
     ; "set and get" >:: test_set_and_get
     ; "rows simple" >:: test_rows
     ; "cols simple" >:: test_cols
+    ; "clues" >:: test_row_and_col_clues
+    ; "fold_rows counts cells" >:: test_fold_rows_counts_cells
     ]
 end
 
