@@ -34,8 +34,6 @@ let js_of_solution (solution : Puzzle.t) : string =
   List.init n ~f:row_to_js |> list_to_js_string ~f:Fn.id
 
 
-(* home page *)
-
 let landing_html : string =
   {|
 <!DOCTYPE html>
@@ -193,7 +191,6 @@ let landing_html : string =
             clearInterval(window._progressInterval);
             status.textContent = 'Nonogram ready!';
             bar.style.width = progress + '%';
-            // After a short delay, go to the game page.
             setTimeout(function () {
               window.location.href = '/game/5';
             }, 300);
@@ -206,8 +203,6 @@ let landing_html : string =
   </body>
 </html>
 |}
-
-(* game page with 5x5 grid and sidebar*)
 
 let game_page_html (solution : Puzzle.t) (puzzle : Puzzle.t) : string =
   let size = Puzzle.size puzzle in
@@ -455,6 +450,10 @@ let game_page_html (solution : Puzzle.t) (puzzle : Puzzle.t) : string =
         background: #fff8e1;
         color: #f57c00;
       }
+
+      .hidden {
+        display: none;
+      }
     </style>
   </head>
   <body>
@@ -473,6 +472,7 @@ let game_page_html (solution : Puzzle.t) (puzzle : Puzzle.t) : string =
             <button id="btn-autosolve">Autosolve</button>
             <button id="btn-check">Check</button>
             <button id="btn-restart">Restart</button>
+            <button id="btn-new">New</button>
           </div>
 
           <div class="board-wrapper">
@@ -480,18 +480,20 @@ let game_page_html (solution : Puzzle.t) (puzzle : Puzzle.t) : string =
               <thead>
                 <tr id="col-clues-row">
                   <th class="corner"></th>
-                  <!-- column clues injected by JS -->
                 </tr>
               </thead>
               <tbody id="board-body">
-                <!-- row clues + cells injected by JS -->
               </tbody>
             </table>
+          </div>
+          <div id="win-screen" class="hidden" style="text-align: center; margin-top: 1rem;">
+            <h2>Congratulations!</h2>
+            <p>You completed the nonogram in <span id="win-time"></span>.</p>
           </div>
         </div>
 
         <div class="sidebar">
-          <div class="timer" id="timer">Time: 0s</div>
+          <div class="timer" id="timer">Time: 00:00</div>
           <div>
             <p class="logger-title">Activity log</p>
             <div class="log-panel" id="log-panel"></div>
@@ -505,9 +507,6 @@ let game_page_html (solution : Puzzle.t) (puzzle : Puzzle.t) : string =
       const ROW_CLUES = |} ^ row_clues_js ^ {|;
       const COL_CLUES = |} ^ col_clues_js ^ {|;
       const SOLUTION = |} ^ solution_js ^ {|;
-      // SOLUTION[y][x] = 1 for filled, 0 for empty
-
-      // 0 = unknown, 1 = filled, 2 = empty
       let gridState = Array.from({ length: SIZE }, () =>
         Array.from({ length: SIZE }, () => 0)
       );
@@ -516,6 +515,14 @@ let game_page_html (solution : Puzzle.t) (puzzle : Puzzle.t) : string =
       let elapsed = 0;
       let timerInterval = null;
       let hintsUsed = 0;
+
+      function formatTime(total) {
+        const minutes = Math.floor(total / 60);
+        const seconds = total % 60;
+        const m = minutes.toString().padStart(2, "0");
+        const s = seconds.toString().padStart(2, "0");
+        return m + ":" + s;
+      }
 
       function log(message, kind = "info") {
         const panel = document.getElementById("log-panel");
@@ -548,11 +555,11 @@ let game_page_html (solution : Puzzle.t) (puzzle : Puzzle.t) : string =
           clearInterval(timerInterval);
         }
         elapsed = 0;
-        timer.textContent = "Time: 0s";
+        timer.textContent = "Time: " + formatTime(0);
         timerInterval = setInterval(() => {
           if (!solved) {
             elapsed += 1;
-            timer.textContent = "Time: " + elapsed + "s";
+            timer.textContent = "Time: " + formatTime(elapsed);
           }
         }, 1000);
       }
@@ -566,7 +573,6 @@ let game_page_html (solution : Puzzle.t) (puzzle : Puzzle.t) : string =
 
       function renderCluesAndGrid() {
         const colRow = document.getElementById("col-clues-row");
-        // Clear existing THs except the first (corner)
         while (colRow.children.length > 1) {
           colRow.removeChild(colRow.lastChild);
         }
@@ -574,7 +580,7 @@ let game_page_html (solution : Puzzle.t) (puzzle : Puzzle.t) : string =
           const th = document.createElement("th");
           th.className = "col-clue-cell";
           const nums = COL_CLUES[x];
-          th.textContent = nums.length ? nums.join("\\n") : "0";
+          th.textContent = nums.length ? nums.join("\n") : "0";
           colRow.appendChild(th);
         }
 
@@ -620,6 +626,19 @@ let game_page_html (solution : Puzzle.t) (puzzle : Puzzle.t) : string =
         }
       }
 
+      function showWin() {
+        const winScreen = document.getElementById("win-screen");
+        const winTime = document.getElementById("win-time");
+        if (winScreen && winTime) {
+          winTime.textContent = formatTime(elapsed);
+          winScreen.classList.remove("hidden");
+        }
+        const boardWrapper = document.querySelector(".board-wrapper");
+        if (boardWrapper) {
+          boardWrapper.classList.add("hidden");
+        }
+      }
+
       function onCellClick(e) {
         if (solved) return;
         const cell = e.currentTarget;
@@ -644,9 +663,10 @@ let game_page_html (solution : Puzzle.t) (puzzle : Puzzle.t) : string =
               solved = true;
               stopTimer();
               log(
-                "OCaml: puzzle solved in " + elapsed + "s with " + hintsUsed + " hint(s).",
+                "OCaml: puzzle solved in " + formatTime(elapsed) + " with " + hintsUsed + " hint(s).",
                 "success"
               );
+              showWin();
             }
           })
           .catch((err) => {
@@ -663,13 +683,21 @@ let game_page_html (solution : Puzzle.t) (puzzle : Puzzle.t) : string =
         solved = false;
         hintsUsed = 0;
         startTimer();
+        const winScreen = document.getElementById("win-screen");
+        if (winScreen) {
+          winScreen.classList.add("hidden");
+        }
+        const boardWrapper = document.querySelector(".board-wrapper");
+        if (boardWrapper) {
+          boardWrapper.classList.remove("hidden");
+        }
         log("Puzzle restarted.", "info");
       }
 
       function isSolvedCorrectly() {
         for (let y = 0; y < SIZE; y++) {
           for (let x = 0; x < SIZE; x++) {
-            const target = SOLUTION[y][x]; // 1 = filled, 0 = empty
+            const target = SOLUTION[y][x];
             const state = gridState[y][x];
             if (state === 0) return false;
             if (target === 1 && state !== 1) return false;
@@ -683,7 +711,8 @@ let game_page_html (solution : Puzzle.t) (puzzle : Puzzle.t) : string =
         if (isSolvedCorrectly()) {
           solved = true;
           stopTimer();
-          log("Puzzle solved correctly in " + elapsed + "s with " + hintsUsed + " hint(s).", "success");
+          log("Puzzle solved correctly in " + formatTime(elapsed) + " with " + hintsUsed + " hint(s).", "success");
+          showWin();
         } else {
           log("Check failed: puzzle is incorrect or incomplete.", "warn");
         }
@@ -696,7 +725,7 @@ let game_page_html (solution : Puzzle.t) (puzzle : Puzzle.t) : string =
           for (let x = 0; x < SIZE; x++) {
             const target = SOLUTION[y][x];
             const state = gridState[y][x];
-            const shouldBe = target === 1 ? 1 : 2; // treat empty as "X"
+            const shouldBe = target === 1 ? 1 : 2;
             if (state !== shouldBe) {
               candidates.push({ x, y, state: shouldBe });
             }
@@ -733,6 +762,11 @@ let game_page_html (solution : Puzzle.t) (puzzle : Puzzle.t) : string =
         solved = true;
         stopTimer();
         log("Autosolve completed.", "success");
+        showWin();
+      }
+
+      function newPuzzle() {
+        window.location.href = "/game/5";
       }
 
       function init() {
@@ -744,6 +778,7 @@ let game_page_html (solution : Puzzle.t) (puzzle : Puzzle.t) : string =
         document.getElementById("btn-restart").addEventListener("click", resetGrid);
         document.getElementById("btn-hint").addEventListener("click", giveHint);
         document.getElementById("btn-autosolve").addEventListener("click", autosolve);
+        document.getElementById("btn-new").addEventListener("click", newPuzzle);
       }
 
       window.addEventListener("DOMContentLoaded", init);
@@ -770,44 +805,43 @@ let () =
              current_game := Some game;
              Dream.html (game_page_html solution puzzle));
 
-             Dream.post "/api/update" (fun req ->
-              let open Lwt.Syntax in
-              let* body = Dream.body req in
-              let parts = String.split (String.strip body) ~on:' ' in
-              let y_opt, x_opt, state_opt =
-                match parts with
-                | [ y_str; x_str; state_str ] ->
-                    Int.of_string_opt y_str, Int.of_string_opt x_str, Some state_str
-                | _ ->
-                    None, None, None
-              in
-              match y_opt, x_opt, state_opt with
-              | Some y, Some x, Some state_str ->
-                  let new_state =
-                    match state_str with
-                    | "0" -> Puzzle.Unknown
-                    | "1" -> Puzzle.Filled
-                    | "2" -> Puzzle.Empty
-                    | _ -> Puzzle.Unknown
-                  in
-                  (match !current_game with
-                   | None ->
-                       Dream.json {|{"status":"no_game"}|}
-                   | Some g ->
-                       let pos = Position.{ x; y } in
-                       let action = Game.UpdateCell { pos; new_state } in
-                       match Game.process_action g action with
-                       | Game.Success g' ->
-                           current_game := Some g';
-                           Dream.json {|{"status":"ok"}|}
-                       | Game.GameWon _ ->
-                           current_game := Some g;
-                           Dream.json {|{"status":"won"}|}
-                       | Game.Error _ ->
-                           Dream.json {|{"status":"error"}|}
-                       | Game.HintProvided _ ->
-                           Dream.json {|{"status":"hint"}|})
-              | _ ->
-                  Dream.json {|{"status":"bad_request"}|});
-     
+       Dream.post "/api/update" (fun req ->
+         let open Lwt.Syntax in
+         let* body = Dream.body req in
+         let parts = String.split (String.strip body) ~on:' ' in
+         let y_opt, x_opt, state_opt =
+           match parts with
+           | [ y_str; x_str; state_str ] ->
+               Int.of_string_opt y_str, Int.of_string_opt x_str, Some state_str
+           | _ ->
+               None, None, None
+         in
+         match y_opt, x_opt, state_opt with
+         | Some y, Some x, Some state_str ->
+             let new_state =
+               match state_str with
+               | "0" -> Puzzle.Unknown
+               | "1" -> Puzzle.Filled
+               | "2" -> Puzzle.Empty
+               | _ -> Puzzle.Unknown
+             in
+             (match !current_game with
+              | None ->
+                  Dream.json {|{"status":"no_game"}|}
+              | Some g ->
+                  let pos = Position.{ x; y } in
+                  let action = Game.UpdateCell { pos; new_state } in
+                  match Game.process_action g action with
+                  | Game.Success g' ->
+                      current_game := Some g';
+                      Dream.json {|{"status":"ok"}|}
+                  | Game.GameWon _ ->
+                      current_game := Some g;
+                      Dream.json {|{"status":"won"}|}
+                  | Game.Error _ ->
+                      Dream.json {|{"status":"error"}|}
+                  | Game.HintProvided _ ->
+                      Dream.json {|{"status":"hint"}"|})
+         | _ ->
+             Dream.json {|{"status":"bad_request"}"|});
      ])
