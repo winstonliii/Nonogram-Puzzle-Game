@@ -22,9 +22,17 @@ val size : t -> int
 val get : t -> position -> cell_state
 val set : t -> position -> cell_state -> t
 
-(* Access lines of the puzzle horizontally or vertically*)
+(* Access lines of the puzzle horizontally or vertically *)
 val rows : t -> int -> cell_state list
 val cols : t -> int -> cell_state list
+
+(* Fold over all rows *)
+val fold_rows :
+  t -> init:'a -> f:('a -> int -> cell_state list -> 'a) -> 'a
+
+(* Fold over all columns *)
+val fold_cols :
+  t -> init:'a -> f:('a -> int -> cell_state list -> 'a) -> 'a
 
 (* Clues for rows and columns *)
 val row_clue : t -> int -> clue

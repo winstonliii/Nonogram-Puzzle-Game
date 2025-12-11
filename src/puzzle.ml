@@ -42,6 +42,26 @@ let cols p c =
   List.init p.size ~f:(fun y ->
       get p Position.{ x = c; y })
 
+let fold_rows p ~init ~f =
+  let rec loop r acc =
+    if r = p.size then acc
+    else
+      let row_cells = rows p r in
+      let acc' = f acc r row_cells in
+      loop (r + 1) acc'
+  in
+  loop 0 init
+
+let fold_cols p ~init ~f =
+  let rec loop c acc =
+    if c = p.size then acc
+    else
+      let col_cells = cols p c in
+      let acc' = f acc c col_cells in
+      loop (c + 1) acc'
+  in
+  loop 0 init
+
 let row_clue p r = p.row_clues.(r)
 let col_clue p c = p.col_clues.(c)
 
