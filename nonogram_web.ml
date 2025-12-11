@@ -33,7 +33,6 @@ let js_of_solution (solution : Puzzle.t) : string =
   in
   List.init n ~f:row_to_js |> list_to_js_string ~f:Fn.id
 
-
 let landing_html : string =
   {|
 <!DOCTYPE html>
@@ -188,7 +187,7 @@ let landing_html : string =
       </div>
 
       <div id="hint" class="hint hidden">
-        Currently, only 5×5 puzzles are implemented.
+        Generating Nonogram
       </div>
     </div>
 
@@ -202,12 +201,6 @@ let landing_html : string =
         status.classList.remove('hidden');
         container.classList.remove('hidden');
         hint.classList.remove('hidden');
-
-        if (size !== 5) {
-          status.textContent = 'Only 5 × 5 puzzles are implemented right now.';
-          bar.style.width = '0%';
-          return;
-        }
 
         status.textContent = 'Generating ' + size + ' × ' + size + ' nonogram…';
 
@@ -226,7 +219,7 @@ let landing_html : string =
             status.textContent = 'Nonogram ready!';
             bar.style.width = progress + '%';
             setTimeout(function () {
-              window.location.href = '/game/5';
+              window.location.href = '/game/' + size;
             }, 300);
           } else {
             bar.style.width = progress + '%';
@@ -248,7 +241,7 @@ let game_page_html (solution : Puzzle.t) (puzzle : Puzzle.t) : string =
 <html>
   <head>
     <meta charset="UTF-8">
-    <title>Nonogram 5x5</title>
+    <title>Nonogram |} ^ Int.to_string size ^ {|x|} ^ Int.to_string size ^ {|</title>
     <style>
       body {
         font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
@@ -549,7 +542,7 @@ let game_page_html (solution : Puzzle.t) (puzzle : Puzzle.t) : string =
   <body>
     <div class="app-shell">
       <div class="top-bar">
-        <h1> Nonogram 5×5</h1>
+        <h1> Nonogram |} ^ Int.to_string size ^ {|×|} ^ Int.to_string size ^ {|</h1>
         <a href="/" class="home-btn">← Back to home</a>
       </div>
 
@@ -597,6 +590,8 @@ let game_page_html (solution : Puzzle.t) (puzzle : Puzzle.t) : string =
       const ROW_CLUES = |} ^ row_clues_js ^ {|;
       const COL_CLUES = |} ^ col_clues_js ^ {|;
       const SOLUTION = |} ^ solution_js ^ {|;
+      const GAME_PATH = "/game/" + SIZE;
+
       let gridState = Array.from({ length: SIZE }, () =>
         Array.from({ length: SIZE }, () => 0)
       );
@@ -793,7 +788,10 @@ let game_page_html (solution : Puzzle.t) (puzzle : Puzzle.t) : string =
         if (isSolvedCorrectly()) {
           solved = true;
           stopTimer();
-          log("Puzzle solved correctly in " + formatTime(elapsed) + " with " + hintsUsed + " hint(s)! 🎉", "success");
+          log(
+            "Puzzle solved correctly in " + formatTime(elapsed) + " with " + hintsUsed + " hint(s)! 🎉",
+            "success"
+          );
           showWin();
         } else {
           log("Check failed: puzzle is incorrect or incomplete.", "warn");
@@ -848,13 +846,13 @@ let game_page_html (solution : Puzzle.t) (puzzle : Puzzle.t) : string =
       }
 
       function newPuzzle() {
-        window.location.href = "/game/5";
+        window.location.href = GAME_PATH;
       }
 
       function init() {
         renderCluesAndGrid();
         startTimer();
-        log("5×5 nonogram is ready to play.", "info");
+        log(SIZE + "×" + SIZE + " nonogram is ready to play.", "info");
 
         document.getElementById("btn-check").addEventListener("click", onCheck);
         document.getElementById("btn-restart").addEventListener("click", resetGrid);
@@ -876,16 +874,25 @@ let () =
        Dream.get "/" (fun _req ->
          Dream.html landing_html);
 
-       Dream.get "/game/5" (fun _req ->
-         match Generator.generate { Generator.rows = 5; cols = 5 } with
-         | Generator.Failure msg ->
-             Dream.html
-               ("<h1>Failed to generate puzzle</h1><p>"
-                ^ Dream.html_escape msg ^ "</p>")
-         | Generator.Success (solution, puzzle) ->
-             let game = Game.create_with_solution puzzle solution in
-             current_game := Some game;
-             Dream.html (game_page_html solution puzzle));
+       (* Parameterized game route for 5, 10, 15 *)
+       Dream.get "/game/:size" (fun req ->
+         let size_str = Dream.param req "size" in
+         match Int.of_string_opt size_str with
+         | None ->
+             Dream.html "<h1>Invalid size</h1>"
+         | Some n ->
+             if not (List.mem [ 5; 10; 15 ] n ~equal:Int.equal) then
+               Dream.html "<h1>Unsupported size (use 5, 10, or 15)</h1>"
+             else
+               (match Generator.generate { Generator.rows = n; cols = n } with
+                | Generator.Failure msg ->
+                    Dream.html
+                      ("<h1>Failed to generate puzzle</h1><p>"
+                       ^ Dream.html_escape msg ^ "</p>")
+                | Generator.Success (solution, puzzle) ->
+                    let game = Game.create_with_solution puzzle solution in
+                    current_game := Some game;
+                    Dream.html (game_page_html solution puzzle)));
 
        Dream.post "/api/update" (fun req ->
          let open Lwt.Syntax in
