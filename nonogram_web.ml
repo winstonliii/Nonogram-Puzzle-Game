@@ -43,22 +43,22 @@ let landing_html : string =
     <title>Nonograms</title>
     <style>
       body {
-        font-family: sans-serif;
-        background: #f5f5f5;
+        font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        background: linear-gradient(135deg, #a8e6cf 0%, #dcedc1 100%);
         margin: 0;
         padding: 2rem;
         min-height: 100vh;
         display: flex;
         justify-content: center;
-        align-items: flex-start;
+        align-items: center;
       }
 
       .container {
-        background: #ffffff;
-        padding: 2rem 3rem;
-        border-radius: 12px;
-        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
-        max-width: 540px;
+        background: #e0e3e7;
+        padding: 3rem 3.5rem;
+        border-radius: 20px;
+        box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+        max-width: 560px;
         width: 100%;
         text-align: center;
       }
@@ -66,12 +66,23 @@ let landing_html : string =
       h1 {
         margin-top: 0;
         margin-bottom: 0.5rem;
+        font-size: 2.5rem;
+        background: linear-gradient(135deg, #56ab2f 0%, #a8e6cf 100%);
+        -webkit-background-clip: text;
+        -webkit-text-fill-color: transparent;
+        background-clip: text;
       }
 
       .subtitle {
         margin-top: 0;
-        margin-bottom: 1.5rem;
-        color: #555;
+        margin-bottom: 2.5rem;
+        color: #666;
+        font-size: 1.1rem;
+      }
+
+      .puzzle-icon {
+        font-size: 4rem;
+        margin-bottom: 1rem;
       }
 
       .size-buttons {
@@ -83,29 +94,32 @@ let landing_html : string =
       }
 
       .size-buttons button {
-        padding: 0.6rem 1.4rem;
-        border-radius: 999px;
-        border: 1px solid #ccc;
-        background: #fff;
+        padding: 1rem 2rem;
+        border-radius: 12px;
+        border: none;
+        background: linear-gradient(135deg, #56ab2f 0%, #a8e6cf 100%);
+        color: white;
         cursor: pointer;
-        font-size: 1rem;
-        transition: background 0.15s ease, transform 0.05s ease,
-                    box-shadow 0.15s ease;
+        font-size: 1.1rem;
+        font-weight: 600;
+        transition: transform 0.2s ease, box-shadow 0.2s ease;
+        box-shadow: 0 4px 15px rgba(86, 171, 47, 0.4);
       }
 
       .size-buttons button:hover {
-        background: #f0f0f0;
+        transform: translateY(-2px);
+        box-shadow: 0 6px 20px rgba(86, 171, 47, 0.6);
       }
 
       .size-buttons button:active {
-        transform: scale(0.97);
-        box-shadow: 0 2px 6px rgba(0, 0, 0, 0.15);
+        transform: translateY(0);
       }
 
       .status {
-        margin-bottom: 0.75rem;
+        margin-bottom: 1rem;
         color: #333;
         font-weight: 500;
+        font-size: 1.05rem;
       }
 
       .hidden {
@@ -114,35 +128,55 @@ let landing_html : string =
 
       .progress-container {
         width: 100%;
-        height: 10px;
-        background: #ddd;
+        height: 12px;
+        background: #e9ecef;
         border-radius: 999px;
         overflow: hidden;
-        margin-bottom: 0.5rem;
+        margin-bottom: 1rem;
       }
 
       .progress-bar {
         height: 100%;
         width: 0%;
-        background: #4caf50;
+        background: linear-gradient(90deg, #56ab2f 0%, #a8e6cf 100%);
         transition: width 0.12s linear;
       }
 
       .hint {
-        font-size: 0.9rem;
-        color: #777;
+        font-size: 0.95rem;
+        color: #888;
+        padding: 1rem;
+        background: #f8f9fa;
+        border-radius: 8px;
+        border-left: 4px solid #ffc107;
+      }
+
+      @keyframes fadeIn {
+        from {
+          opacity: 0;
+          transform: translateY(10px);
+        }
+        to {
+          opacity: 1;
+          transform: translateY(0);
+        }
+      }
+
+      .container {
+        animation: fadeIn 0.5s ease;
       }
     </style>
   </head>
   <body>
     <div class="container">
-      <h1>Welcome to Nonograms</h1>
-      <p class="subtitle">Choose a puzzle size to get started.</p>
+      <div class="puzzle-icon"></div>
+      <h1>Welcome to Nonograms Game!</h1>
+      <p class="subtitle">Choose a puzzle size to get started</p>
 
       <div class="size-buttons">
-        <button onclick="startGeneration(5)">5 x 5</button>
-        <button onclick="startGeneration(10)">10 x 10</button>
-        <button onclick="startGeneration(15)">15 x 15</button>
+        <button onclick="startGeneration(5)">5 × 5</button>
+        <button onclick="startGeneration(10)">10 × 10</button>
+        <button onclick="startGeneration(15)">15 × 15</button>
       </div>
 
       <div id="status" class="status hidden">
@@ -170,12 +204,12 @@ let landing_html : string =
         hint.classList.remove('hidden');
 
         if (size !== 5) {
-          status.textContent = 'Only 5 x 5 puzzles are implemented right now.';
+          status.textContent = 'Only 5 × 5 puzzles are implemented right now.';
           bar.style.width = '0%';
           return;
         }
 
-        status.textContent = 'Generating ' + size + ' x ' + size + ' nonogram…';
+        status.textContent = 'Generating ' + size + ' × ' + size + ' nonogram…';
 
         let progress = 0;
         bar.style.width = '0%';
@@ -217,8 +251,8 @@ let game_page_html (solution : Puzzle.t) (puzzle : Puzzle.t) : string =
     <title>Nonogram 5x5</title>
     <style>
       body {
-        font-family: sans-serif;
-        background: #f5f5f5;
+        font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        background: linear-gradient(135deg, #a8e6cf 0%, #dcedc1 100%);
         margin: 0;
         padding: 1.5rem;
         min-height: 100vh;
@@ -228,7 +262,7 @@ let game_page_html (solution : Puzzle.t) (puzzle : Puzzle.t) : string =
       }
 
       .app-shell {
-        max-width: 980px;
+        max-width: 1100px;
         width: 100%;
       }
 
@@ -236,27 +270,37 @@ let game_page_html (solution : Puzzle.t) (puzzle : Puzzle.t) : string =
         display: flex;
         justify-content: space-between;
         align-items: center;
-        margin-bottom: 1rem;
+        margin-bottom: 1.5rem;
+      }
+
+      .top-bar h1 {
+        color: white;
+        margin: 0;
+        font-size: 2rem;
+        text-shadow: 0 2px 10px rgba(0, 0, 0, 0.2);
       }
 
       .home-btn {
-        padding: 0.4rem 1rem;
-        border-radius: 999px;
-        border: 1px solid #ccc;
-        background: #fff;
+        padding: 0.6rem 1.4rem;
+        border-radius: 12px;
+        border: none;
+        background: rgba(255, 255, 255, 0.95);
         cursor: pointer;
-        font-size: 0.9rem;
+        font-size: 0.95rem;
+        font-weight: 600;
         text-decoration: none;
-        color: #333;
-        transition: background 0.15s ease, transform 0.05s ease;
+        color: #56ab2f;
+        transition: transform 0.2s ease, box-shadow 0.2s ease;
+        box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
       }
 
       .home-btn:hover {
-        background: #f0f0f0;
+        transform: translateY(-2px);
+        box-shadow: 0 6px 20px rgba(0, 0, 0, 0.3);
       }
 
       .home-btn:active {
-        transform: scale(0.97);
+        transform: translateY(0);
       }
 
       .app {
@@ -266,64 +310,66 @@ let game_page_html (solution : Puzzle.t) (puzzle : Puzzle.t) : string =
 
       .main-panel {
         flex: 2;
-        background: #ffffff;
-        border-radius: 12px;
-        padding: 1.5rem 2rem;
-        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+        background: #e0e3e7;
+        border-radius: 16px;
+        padding: 2rem 2.5rem;
+        box-shadow: 0 10px 40px rgba(0, 0, 0, 0.2);
       }
 
       .sidebar {
         flex: 1;
-        background: #ffffff;
-        border-radius: 12px;
+        background: #e0e3e7;
+        border-radius: 16px;
         padding: 1.5rem;
-        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+        box-shadow: 0 10px 40px rgba(0, 0, 0, 0.2);
         display: flex;
         flex-direction: column;
         gap: 1rem;
       }
 
-      .game-title {
-        margin-top: 0;
-        margin-bottom: 0.25rem;
-      }
-
       .game-subtitle {
         margin: 0;
         color: #666;
-        margin-bottom: 1rem;
+        margin-bottom: 1.5rem;
+        font-size: 1rem;
       }
 
       .toolbar {
         display: flex;
-        gap: 0.5rem;
-        margin-bottom: 1rem;
+        gap: 0.6rem;
+        margin-bottom: 1.5rem;
+        flex-wrap: wrap;
       }
 
       .toolbar button {
-        padding: 0.4rem 0.9rem;
-        border-radius: 999px;
-        border: 1px solid #ccc;
-        background: #fafafa;
+        padding: 0.55rem 1.1rem;
+        border-radius: 10px;
+        border: none;
+        background: linear-gradient(135deg, #56ab2f 0%, #a8e6cf 100%);
+        color: white;
         cursor: pointer;
         font-size: 0.9rem;
-        transition: background 0.15s ease, transform 0.05s ease;
+        font-weight: 600;
+        transition: transform 0.15s ease, box-shadow 0.15s ease;
+        box-shadow: 0 2px 8px rgba(86, 171, 47, 0.3);
       }
 
       .toolbar button:hover {
-        background: #f0f0f0;
+        transform: translateY(-1px);
+        box-shadow: 0 4px 12px rgba(86, 171, 47, 0.5);
       }
 
       .toolbar button:active {
-        transform: scale(0.97);
+        transform: translateY(0);
       }
 
       .board-wrapper {
         display: inline-block;
-        padding: 0.75rem;
-        border-radius: 12px;
-        background: #f9f9f9;
-        border: 1px solid #e0e0e0;
+        padding: 1rem;
+        border-radius: 16px;
+        background: linear-gradient(135deg, #cfd6de 0%, #c1c9d0 100%);
+        border: 2px solid #dee2e6;
+        box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
       }
 
       table.board {
@@ -344,122 +390,166 @@ let game_page_html (solution : Puzzle.t) (puzzle : Puzzle.t) : string =
       }
 
       .col-clue-cell {
-        width: 28px;
+        width: 32px;
         height: 40px;
-        font-size: 0.7rem;
-        color: #555;
+        font-size: 0.75rem;
+        color: #495057;
+        font-weight: 600;
         white-space: pre-line;
         vertical-align: bottom;
       }
 
       .row-clue-cell {
         width: 40px;
-        font-size: 0.7rem;
-        color: #555;
+        font-size: 0.75rem;
+        color: #495057;
+        font-weight: 600;
         text-align: right;
-        padding-right: 4px;
+        padding-right: 6px;
         white-space: pre;
       }
 
       .grid-cell {
-        width: 28px;
-        height: 28px;
+        width: 32px;
+        height: 32px;
       }
 
       .cell {
-        width: 28px;
-        height: 28px;
-        border-radius: 4px;
-        border: 1px solid #ccc;
-        background: #ffffff;
+        width: 32px;
+        height: 32px;
+        border-radius: 6px;
+        border: 2px solid #adb5bd;
+        background: #e0e3e7;
         cursor: pointer;
         display: flex;
         align-items: center;
         justify-content: center;
-        font-size: 1rem;
+        font-size: 1.1rem;
         user-select: none;
-        transition: background 0.12s ease, transform 0.05s ease, box-shadow 0.12s ease;
+        transition: all 0.15s ease;
       }
 
       .cell:hover {
-        box-shadow: 0 0 0 2px rgba(76, 175, 80, 0.2);
+        box-shadow: 0 0 0 3px rgba(86, 171, 47, 0.3);
+        transform: scale(1.05);
       }
 
       .cell.filled {
-        background: #4caf50;
+        background: linear-gradient(135deg, #56ab2f 0%, #a8e6cf 100%);
+        border-color: #4a9128;
         color: white;
+        box-shadow: 0 2px 8px rgba(86, 171, 47, 0.4);
       }
 
       .cell.empty {
-        background: #f5f5f5;
-        color: #999;
+        background: #cfd6de;
+        border-color: #ced4da;
+        color: #6c757d;
       }
 
       .logger-title {
         font-weight: 600;
         margin: 0;
+        color: #495057;
       }
 
       .timer {
-        font-size: 1rem;
+        font-size: 1.1rem;
         font-weight: 600;
-        padding: 0.5rem 0.75rem;
-        border-radius: 999px;
-        background: #f5f5f5;
+        padding: 0.7rem 1rem;
+        border-radius: 12px;
+        background: linear-gradient(135deg, #cfd6de 0%, #c1c9d0 100%);
         display: inline-block;
+        color: #495057;
+        border: 2px solid #dee2e6;
       }
 
       .log-panel {
         flex: 1;
-        border-radius: 8px;
-        border: 1px solid #e0e0e0;
-        padding: 0.5rem;
-        background: #fafafa;
+        border-radius: 10px;
+        border: 2px solid #e9ecef;
+        padding: 0.75rem;
+        background: #cfd6de;
         overflow-y: auto;
         font-size: 0.85rem;
+        max-height: 400px;
       }
 
       .log-entry {
-        margin: 0.15rem 0;
+        margin: 0.25rem 0;
+        padding: 0.4rem;
+        border-radius: 6px;
+        background: #e0e3e7;
       }
 
       .log-entry span {
-        color: #888;
-        font-size: 0.75rem;
+        color: #6c757d;
+        font-size: 0.8rem;
       }
 
       .tag {
         display: inline-block;
-        padding: 0.1rem 0.45rem;
-        border-radius: 999px;
+        padding: 0.15rem 0.5rem;
+        border-radius: 6px;
         font-size: 0.7rem;
-        margin-right: 0.25rem;
+        font-weight: 600;
+        margin-right: 0.35rem;
       }
 
       .tag-info {
-        background: #e3f2fd;
-        color: #1565c0;
+        background: #cfe2ff;
+        color: #084298;
       }
 
       .tag-success {
-        background: #e8f5e9;
-        color: #2e7d32;
+        background: #d1e7dd;
+        color: #0a3622;
       }
 
       .tag-warn {
-        background: #fff8e1;
-        color: #f57c00;
+        background: #fff3cd;
+        color: #997404;
       }
 
       .hidden {
         display: none;
+      }
+
+      .win-screen {
+        text-align: center;
+        margin-top: 2rem;
+        padding: 2rem;
+        background: linear-gradient(135deg, #d4fc79 0%, #96e6a1 100%);
+        border-radius: 16px;
+        box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+      }
+
+      .win-screen h2 {
+        margin: 0 0 1rem 0;
+        color: #155724;
+        font-size: 2rem;
+      }
+
+      .win-screen p {
+        margin: 0.5rem 0;
+        color: #155724;
+        font-size: 1.2rem;
+      }
+
+      @keyframes celebrate {
+        0%, 100% { transform: scale(1); }
+        50% { transform: scale(1.05); }
+      }
+
+      .win-screen {
+        animation: celebrate 0.5s ease;
       }
     </style>
   </head>
   <body>
     <div class="app-shell">
       <div class="top-bar">
-        <h1>Nonogram 5x5</h1>
+        <h1> Nonogram 5×5</h1>
         <a href="/" class="home-btn">← Back to home</a>
       </div>
 
@@ -468,11 +558,11 @@ let game_page_html (solution : Puzzle.t) (puzzle : Puzzle.t) : string =
           <p class="game-subtitle">Fill the grid to match the clues. Click to toggle: blank → filled → X.</p>
 
           <div class="toolbar">
-            <button id="btn-hint">Hint</button>
-            <button id="btn-autosolve">Autosolve</button>
-            <button id="btn-check">Check</button>
-            <button id="btn-restart">Restart</button>
-            <button id="btn-new">New</button>
+            <button id="btn-hint"> Hint</button>
+            <button id="btn-autosolve"> Autosolve</button>
+            <button id="btn-check">✓ Check</button>
+            <button id="btn-restart">↻ Restart</button>
+            <button id="btn-new">Generate New Puzzle</button>
           </div>
 
           <div class="board-wrapper">
@@ -486,16 +576,16 @@ let game_page_html (solution : Puzzle.t) (puzzle : Puzzle.t) : string =
               </tbody>
             </table>
           </div>
-          <div id="win-screen" class="hidden" style="text-align: center; margin-top: 1rem;">
-            <h2>Congratulations!</h2>
-            <p>You completed the nonogram in <span id="win-time"></span>.</p>
+          <div id="win-screen" class="win-screen hidden">
+            <h2> Congratulations!</h2>
+            <p>You completed the nonogram in <span id="win-time"></span>!</p>
           </div>
         </div>
 
         <div class="sidebar">
-          <div class="timer" id="timer">Time: 00:00</div>
+          <div class="timer" id="timer">Timer 00:00</div>
           <div>
-            <p class="logger-title">Activity log</p>
+            <p class="logger-title">Activity Log</p>
             <div class="log-panel" id="log-panel"></div>
           </div>
         </div>
@@ -555,11 +645,11 @@ let game_page_html (solution : Puzzle.t) (puzzle : Puzzle.t) : string =
           clearInterval(timerInterval);
         }
         elapsed = 0;
-        timer.textContent = "Time: " + formatTime(0);
+        timer.textContent = "⏱️ " + formatTime(0);
         timerInterval = setInterval(() => {
           if (!solved) {
             elapsed += 1;
-            timer.textContent = "Time: " + formatTime(elapsed);
+            timer.textContent = "⏱️ " + formatTime(elapsed);
           }
         }, 1000);
       }
@@ -633,10 +723,6 @@ let game_page_html (solution : Puzzle.t) (puzzle : Puzzle.t) : string =
           winTime.textContent = formatTime(elapsed);
           winScreen.classList.remove("hidden");
         }
-        const boardWrapper = document.querySelector(".board-wrapper");
-        if (boardWrapper) {
-          boardWrapper.classList.add("hidden");
-        }
       }
 
       function onCellClick(e) {
@@ -663,7 +749,7 @@ let game_page_html (solution : Puzzle.t) (puzzle : Puzzle.t) : string =
               solved = true;
               stopTimer();
               log(
-                "OCaml: puzzle solved in " + formatTime(elapsed) + " with " + hintsUsed + " hint(s).",
+                "Puzzle solved in " + formatTime(elapsed) + " with " + hintsUsed + " hint(s)!",
                 "success"
               );
               showWin();
@@ -687,10 +773,6 @@ let game_page_html (solution : Puzzle.t) (puzzle : Puzzle.t) : string =
         if (winScreen) {
           winScreen.classList.add("hidden");
         }
-        const boardWrapper = document.querySelector(".board-wrapper");
-        if (boardWrapper) {
-          boardWrapper.classList.remove("hidden");
-        }
         log("Puzzle restarted.", "info");
       }
 
@@ -711,7 +793,7 @@ let game_page_html (solution : Puzzle.t) (puzzle : Puzzle.t) : string =
         if (isSolvedCorrectly()) {
           solved = true;
           stopTimer();
-          log("Puzzle solved correctly in " + formatTime(elapsed) + " with " + hintsUsed + " hint(s).", "success");
+          log("Puzzle solved correctly in " + formatTime(elapsed) + " with " + hintsUsed + " hint(s)! 🎉", "success");
           showWin();
         } else {
           log("Check failed: puzzle is incorrect or incomplete.", "warn");
@@ -772,7 +854,7 @@ let game_page_html (solution : Puzzle.t) (puzzle : Puzzle.t) : string =
       function init() {
         renderCluesAndGrid();
         startTimer();
-        log("5x5 nonogram is ready to play.", "info");
+        log("5×5 nonogram is ready to play.", "info");
 
         document.getElementById("btn-check").addEventListener("click", onCheck);
         document.getElementById("btn-restart").addEventListener("click", resetGrid);
