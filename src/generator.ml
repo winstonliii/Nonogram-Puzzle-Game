@@ -15,64 +15,57 @@ type generation_result =
 let clue_of_cells (cells : cell_state list) : clue =
   Validator.clue_of_cells cells
 
-(* Generate random solution grid w Random.bool (50% fill prob) for each cell*)
-  (* We can update this later for better results with larger nonograms like 10x10, 15x15! *)
-let random_solution_matrix (size : int) : cell_state array array =
-  let m = Array.make_matrix ~dimx:size ~dimy:size Empty in
-  for y = 0 to size - 1 do
-    for x = 0 to size - 1 do
-      let v = if Random.bool () then Filled else Empty in
-      m.(y).(x) <- v
-    done
-  done;
-  m
+(* Generate random solution grid w Random.bool (50% fill prob) for each cell.
+   Keep as list-of-lists, then later convert to Puzzle.t *)
+let random_solution_grid (size : int) : cell_state list list =
+  List.init size ~f:(fun _ ->
+      List.init size ~f:(fun _ ->
+          if Random.bool () then Filled else Empty))
 
-(* Extract row/col clues from a completed solution matrix.
-   Reads each as a cell list, then encodes it *)
-let clues_from_matrix (m : cell_state array array) :
-  clue array * clue array =
-let size = Array.length m in
-let row_clues =
-  Array.init size ~f:(fun y ->
-      let row = Array.to_list m.(y) in
-      clue_of_cells row)
-in
-let col_clues =
-  Array.init size ~f:(fun x ->
-      let col = List.init size ~f:(fun y -> m.(y).(x)) in
-      clue_of_cells col)
-in
-(row_clues, col_clues)
+(* Extract row/col clues from a completed solution grid.
+   Reads each row/column as a cell list, then encodes it. *)
+let clues_from_grid (grid : cell_state list list) :
+    clue array * clue array =
+  let size = List.length grid in
+  let row_clues =
+    grid
+    |> List.map ~f:clue_of_cells
+    |> Array.of_list
+  in
+  let col_clues =
+    let get_col x =
+      let col = List.map grid ~f:(fun row -> List.nth_exn row x) in
+      clue_of_cells col
+    in
+    Array.init size ~f:get_col
+  in
+  (row_clues, col_clues)
 
-(* Copy solution matrix into a Puzzle.t record w given clues *)
-let puzzle_from_solution (m : cell_state array array)
+(* Copy solution grid into a Puzzle.t record w/ given clues *)
+let puzzle_from_grid (grid : cell_state list list)
     (row_clues : clue array) (col_clues : clue array) : t =
-  let size = Array.length m in
-  let p = create ~size ~row_clues ~col_clues in
-  let p_ref = ref p in
-  for y = 0 to size - 1 do
-    for x = 0 to size - 1 do
-      let pos = Position.{ x; y } in
-      p_ref := set !p_ref pos m.(y).(x)
-    done
-  done;
-  !p_ref
+  let size = List.length grid in
+  let initial = create ~size ~row_clues ~col_clues in
+  List.foldi grid ~init:initial ~f:(fun y acc row ->
+      List.foldi row ~init:acc ~f:(fun x acc cell ->
+          set acc Position.{ x; y } cell))
 
-(* Verify solver output matches correct solution *)
-let puzzle_matches_matrix (p : t) (m : cell_state array array) : bool =
-  let size_p = size p in
-  let size_m = Array.length m in
-  if size_p <> size_m then false
+(* Verify solver output matches correct solution puzzle *)
+let puzzles_match (p1 : t) (p2 : t) : bool =
+  let size1 = size p1 in
+  let size2 = size p2 in
+  if size1 <> size2 then false
   else
-    let ok = ref true in
-    for y = 0 to size_p - 1 do
-      for x = 0 to size_p - 1 do
-        let expected = m.(y).(x) in
-        let actual = get p Position.{ x; y } in
-        if not (phys_equal expected actual) then ok := false
-      done
-    done;
-    !ok
+    let rec check y x =
+      if y = size1 then true
+      else if x = size1 then check (y + 1) 0
+      else
+        let pos = Position.{ x; y } in
+        let c1 = get p1 pos in
+        let c2 = get p2 pos in
+        phys_equal c1 c2 && check y (x + 1)
+    in
+    check 0 0
 
 let max_attempts = 100
 
@@ -96,9 +89,8 @@ let generate (params : generation_params) : generation_result =
         if n = 0 then
           Failure "Failed to generate a uniquely solvable puzzle."
         else
-          let solution_matrix = random_solution_matrix size in
-          let row_clues, col_clues = clues_from_matrix solution_matrix in
-
+          let solution_grid = random_solution_grid size in
+          let row_clues, col_clues = clues_from_grid solution_grid in
           let puzzle = create ~size ~row_clues ~col_clues in
           match Solver.solve puzzle with
           | Solver.NoSolution ->
@@ -108,10 +100,10 @@ let generate (params : generation_params) : generation_result =
           | Solver.MultipleSolutions _ ->
               attempt (n - 1)
           | Solver.Solved solved_puzzle ->
-              if puzzle_matches_matrix solved_puzzle solution_matrix then
-                let solution_puzzle =
-                  puzzle_from_solution solution_matrix row_clues col_clues
-                in
+              let solution_puzzle =
+                puzzle_from_grid solution_grid row_clues col_clues
+              in
+              if puzzles_match solved_puzzle solution_puzzle then
                 Success (solution_puzzle, puzzle)
               else
                 attempt (n - 1)

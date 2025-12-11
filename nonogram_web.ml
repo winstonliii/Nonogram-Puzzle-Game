@@ -15,8 +15,7 @@ let js_of_clue_array (puzzle : Puzzle.t) ~is_row : string =
     in
     js_of_int_list nums
   in
-  let elems = List.init n ~f:get_clue in
-  list_to_js_string ~f:(fun x -> x) elems
+  List.init n ~f:get_clue |> list_to_js_string ~f:Fn.id
 
 let js_of_solution (solution : Puzzle.t) : string =
   let n = Puzzle.size solution in
@@ -24,14 +23,14 @@ let js_of_solution (solution : Puzzle.t) : string =
     let row = Puzzle.rows solution y in
     let ints =
       List.map row ~f:(function
-        | Puzzle.Filled -> "1"
-        | Puzzle.Empty -> "0"
-        | Puzzle.Unknown -> "0")
+        | Puzzle.Filled -> 1
+        | Puzzle.Empty -> 0
+        | Puzzle.Unknown -> 0)
     in
-    list_to_js_string ~f:(fun x -> x) ints
+    list_to_js_string ~f:Int.to_string ints
   in
-  let rows = List.init n ~f:row_to_js in
-  list_to_js_string ~f:(fun x -> x) rows
+  List.init n ~f:row_to_js |> list_to_js_string ~f:Fn.id
+
 
 (* home page *)
 
