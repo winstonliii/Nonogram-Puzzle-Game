@@ -93,13 +93,11 @@ let generate (params : generation_params) : generation_result =
           let row_clues, col_clues = clues_from_grid solution_grid in
           let puzzle = create ~size ~row_clues ~col_clues in
           match Solver.solve puzzle with
-          | Solver.NoSolution ->
+          | Solver.NoSolution
+          | PartialSolution _
+          | MultipleSolutions _ ->
               attempt (n - 1)
-          | Solver.PartialSolution _ ->
-              attempt (n - 1)
-          | Solver.MultipleSolutions _ ->
-              attempt (n - 1)
-          | Solver.Solved solved_puzzle ->
+          | Solved solved_puzzle ->
               let solution_puzzle =
                 puzzle_from_grid solution_grid row_clues col_clues
               in
