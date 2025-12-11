@@ -426,6 +426,29 @@ module Grid_tests = struct
 end
 
 
+(* Position Tests *)
+module Position_tests = struct
+  let test_equality _ =
+    let p1 = Position.{ x = 1; y = 2 } in
+    let p2 = Position.{ x = 1; y = 2 } in
+    assert_equal p1 p2
+  ;;
+
+  let test_compare_order _ =
+    let p_left  = Position.{ x = 0; y = 0 } in
+    let p_right = Position.{ x = 1; y = 0 } in
+    assert_bool "p_left should come before p_right"
+      (Position.compare p_left p_right < 0)
+  ;;
+
+  let series =
+    "Position tests" >::: 
+    [ "equality" >:: test_equality
+    ; "compare order" >:: test_compare_order
+    ]
+end
+
+
 let suite =
   "All tests" >::: [
     Puzzle_tests.series;
@@ -434,6 +457,7 @@ let suite =
     Validator_tests.series;
     Solver_tests.series;
     Grid_tests.series;
+    Position_tests.series;
   ]
 
 let () =
