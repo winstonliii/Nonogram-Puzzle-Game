@@ -1,8 +1,11 @@
 open Core
 open Nonogram
 
+let list_to_js_string ~f ls =
+  "[" ^ String.concat ~sep:"," (List.map ls ~f) ^ "]"
+
 let js_of_int_list (lst : int list) : string =
-  "[" ^ String.concat ~sep:"," (List.map lst ~f:Int.to_string) ^ "]"
+  list_to_js_string ~f:Int.to_string lst
 
 let js_of_clue_array (puzzle : Puzzle.t) ~is_row : string =
   let n = Puzzle.size puzzle in
@@ -13,7 +16,7 @@ let js_of_clue_array (puzzle : Puzzle.t) ~is_row : string =
     js_of_int_list nums
   in
   let elems = List.init n ~f:get_clue in
-  "[" ^ String.concat ~sep:"," elems ^ "]"
+  list_to_js_string ~f:(fun x -> x) elems
 
 let js_of_solution (solution : Puzzle.t) : string =
   let n = Puzzle.size solution in
@@ -25,10 +28,10 @@ let js_of_solution (solution : Puzzle.t) : string =
         | Puzzle.Empty -> "0"
         | Puzzle.Unknown -> "0")
     in
-    "[" ^ String.concat ~sep:"," ints ^ "]"
+    list_to_js_string ~f:(fun x -> x) ints
   in
   let rows = List.init n ~f:row_to_js in
-  "[" ^ String.concat ~sep:"," rows ^ "]"
+  list_to_js_string ~f:(fun x -> x) rows
 
 (* home page *)
 

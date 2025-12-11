@@ -29,21 +29,32 @@ What is not working:
 
 Setup:
 
-1. ``` clone the repository ```
+1. Clone the repository:
+   ```
+   git clone https://github.com/winstonliii/Nonogram-Puzzle-Game.git
+   cd Nonogram-Puzzle-Game
+   ```
 
-2. ``` dune build ```
+2. Install dependencies:
+   ```
+   opam install . --deps-only --working-dir
+   ```
 
-3. ``` opam install . --deps-only --working-dir ```
+3. Build the project:
+   ```
+   dune build
+   ```
 
 
 
 Launch Dream Frontend:
 
-``` dune exec --root . ./nonogram_web.exe ```
+```
+dune exec --root . ./nonogram_web.exe
+```
 
 
 
 Final Demo and Submission:
 - End to end invariant tests (brandon)
 - Edge Cases ()
-
