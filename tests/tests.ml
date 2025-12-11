@@ -355,6 +355,77 @@ module Solver_tests = struct
 end
 
 
+(* Grid Tests *)
+module Grid_tests = struct
+  let make_grid () =
+    Grid.create ~size:2 ~init:(fun _ -> 0)
+  ;;
+
+  let test_size _ =
+    let g = make_grid () in
+    assert_equal 2 (Grid.size g)
+  ;;
+
+  let test_get_initial_values _ =
+    let g = make_grid () in
+    assert_equal 0 (Grid.get g Position.{ x = 0; y = 0 });
+    assert_equal 0 (Grid.get g Position.{ x = 1; y = 0 });
+    assert_equal 0 (Grid.get g Position.{ x = 0; y = 1 });
+    assert_equal 0 (Grid.get g Position.{ x = 1; y = 1 })
+  ;;
+
+  let test_set_only_changes_one_cell _ =
+    let g = make_grid () in
+    let pos = Position.{ x = 1; y = 0 } in
+    let g2 = Grid.set g pos 42 in
+    assert_equal 42 (Grid.get g2 pos);
+    assert_equal 0 (Grid.get g2 Position.{ x = 0; y = 0 })
+  ;;
+
+  let test_rows_and_cols_match_layout _ =
+    let g = make_grid () in
+    let g = Grid.set g Position.{ x = 0; y = 0 } 1 in
+    let g = Grid.set g Position.{ x = 1; y = 0 } 2 in
+    let g = Grid.set g Position.{ x = 0; y = 1 } 3 in
+    let g = Grid.set g Position.{ x = 1; y = 1 } 4 in
+
+    assert_equal [1; 2] (Grid.rows g 0);
+    assert_equal [3; 4] (Grid.rows g 1);
+    assert_equal [1; 3] (Grid.cols g 0);
+    assert_equal [2; 4] (Grid.cols g 1)
+  ;;
+
+  let test_fold_rows_and_cols _ =
+    let g = make_grid () in
+    let g = Grid.set g Position.{ x = 0; y = 0 } 1 in
+    let g = Grid.set g Position.{ x = 1; y = 0 } 2 in
+    let g = Grid.set g Position.{ x = 0; y = 1 } 3 in
+    let g = Grid.set g Position.{ x = 1; y = 1 } 4 in
+
+    let sum_rows =
+      Grid.fold_rows g ~init:0 ~f:(fun acc _ row ->
+        List.fold_left ( + ) acc row)
+    in
+    let sum_cols =
+      Grid.fold_cols g ~init:0 ~f:(fun acc _ col ->
+        List.fold_left ( + ) acc col)
+    in
+
+    assert_equal 10 sum_rows;
+    assert_equal 10 sum_cols
+  ;;
+
+  let series =
+    "Grid tests" >::: 
+    [ "size" >:: test_size
+    ; "initial values" >:: test_get_initial_values
+    ; "set only one cell" >:: test_set_only_changes_one_cell
+    ; "rows and cols" >:: test_rows_and_cols_match_layout
+    ; "fold rows and cols" >:: test_fold_rows_and_cols
+    ]
+end
+
+
 let suite =
   "All tests" >::: [
     Puzzle_tests.series;
@@ -362,6 +433,7 @@ let suite =
     Generator_tests.series;
     Validator_tests.series;
     Solver_tests.series;
+    Grid_tests.series;
   ]
 
 let () =
