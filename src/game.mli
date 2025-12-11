@@ -32,6 +32,7 @@ type status =
   | Won 
   | Checking
 
+val create_with_solution : Puzzle.t -> Puzzle.t -> t
 val create : Puzzle.t -> t
 val puzzle : t -> Puzzle.t
 val status : t -> status

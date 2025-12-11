@@ -1,6 +1,8 @@
 open Core
 open Nonogram
 
+let current_game : Game.t option ref = ref None
+
 let list_to_js_string ~f ls =
   "[" ^ String.concat ~sep:"," (List.map ls ~f) ^ "]"
 
@@ -625,9 +627,31 @@ let game_page_html (solution : Puzzle.t) (puzzle : Puzzle.t) : string =
         const y = parseInt(cell.dataset.y, 10);
 
         const current = gridState[y][x];
-        const next = (current + 1) % 3; // 0 -> 1 -> 2 -> 0
+        const next = (current + 1) % 3;
         gridState[y][x] = next;
         updateCellVisual(cell, next);
+
+        fetch("/api/update", {
+          method: "POST",
+          headers: {
+            "Content-Type": "text/plain",
+          },
+          body: y + " " + x + " " + next,
+        })
+          .then((res) => res.json())
+          .then((data) => {
+            if (data.status === "won") {
+              solved = true;
+              stopTimer();
+              log(
+                "OCaml: puzzle solved in " + elapsed + "s with " + hintsUsed + " hint(s).",
+                "success"
+              );
+            }
+          })
+          .catch((err) => {
+            console.error("update error", err);
+          });
       }
 
       function resetGrid() {
@@ -732,11 +756,9 @@ let () =
   Dream.run
     (Dream.logger
      @@ Dream.router [
-       (* home page *)
        Dream.get "/" (fun _req ->
          Dream.html landing_html);
 
-       (* 5x5 game page w generator and solve *)
        Dream.get "/game/5" (fun _req ->
          match Generator.generate { Generator.rows = 5; cols = 5 } with
          | Generator.Failure msg ->
@@ -744,5 +766,48 @@ let () =
                ("<h1>Failed to generate puzzle</h1><p>"
                 ^ Dream.html_escape msg ^ "</p>")
          | Generator.Success (solution, puzzle) ->
+             let game = Game.create_with_solution puzzle solution in
+             current_game := Some game;
              Dream.html (game_page_html solution puzzle));
+
+             Dream.post "/api/update" (fun req ->
+              let open Lwt.Syntax in
+              let* body = Dream.body req in
+              let parts = String.split (String.strip body) ~on:' ' in
+              let y_opt, x_opt, state_opt =
+                match parts with
+                | [ y_str; x_str; state_str ] ->
+                    Int.of_string_opt y_str, Int.of_string_opt x_str, Some state_str
+                | _ ->
+                    None, None, None
+              in
+              match y_opt, x_opt, state_opt with
+              | Some y, Some x, Some state_str ->
+                  let new_state =
+                    match state_str with
+                    | "0" -> Puzzle.Unknown
+                    | "1" -> Puzzle.Filled
+                    | "2" -> Puzzle.Empty
+                    | _ -> Puzzle.Unknown
+                  in
+                  (match !current_game with
+                   | None ->
+                       Dream.json {|{"status":"no_game"}|}
+                   | Some g ->
+                       let pos = Position.{ x; y } in
+                       let action = Game.UpdateCell { pos; new_state } in
+                       match Game.process_action g action with
+                       | Game.Success g' ->
+                           current_game := Some g';
+                           Dream.json {|{"status":"ok"}|}
+                       | Game.GameWon _ ->
+                           current_game := Some g;
+                           Dream.json {|{"status":"won"}|}
+                       | Game.Error _ ->
+                           Dream.json {|{"status":"error"}|}
+                       | Game.HintProvided _ ->
+                           Dream.json {|{"status":"hint"}|})
+              | _ ->
+                  Dream.json {|{"status":"bad_request"}|});
+     
      ])
