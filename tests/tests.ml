@@ -75,7 +75,14 @@ module Game_tests = struct
     let row_clues = [| Puzzle.RLE [1]; Puzzle.RLE [1] |] in
     let col_clues = [| Puzzle.RLE [1]; Puzzle.RLE [1] |] in
     let p = Puzzle.create ~size ~row_clues ~col_clues in
-    Game.create p
+    let s =
+      let p1 = Puzzle.set p { x = 0; y = 0 } Puzzle.Empty in
+      let p2 = Puzzle.set p1 { x = 1; y = 0 } Puzzle.Empty in
+      let p3 = Puzzle.set p2 { x = 0; y = 1 } Puzzle.Empty in
+      let p4 = Puzzle.set p3 { x = 1; y = 1 } Puzzle.Empty in
+      p4
+    in
+    Game.create_with_solution p s
   ;;
 
   let test_initial_status _ =
@@ -127,12 +134,133 @@ module Game_tests = struct
     assert_equal Puzzle.Unknown (Puzzle.get (Game.puzzle g4) pos)
   ;;
   
+  let test_check_incomplete_ok _ =
+    let size = 2 in
+    let row_clues = [| Puzzle.RLE []; Puzzle.RLE [] |] in
+    let col_clues = [| Puzzle.RLE []; Puzzle.RLE [] |] in
+    let p = Puzzle.create ~size ~row_clues ~col_clues in
+    let s =
+      let p1 = Puzzle.set p { x = 0; y = 0 } Puzzle.Empty in
+      let p2 = Puzzle.set p1 { x = 1; y = 0 } Puzzle.Empty in
+      let p3 = Puzzle.set p2 { x = 0; y = 1 } Puzzle.Empty in
+      let p4 = Puzzle.set p3 { x = 1; y = 1 } Puzzle.Empty in
+      p4
+    in
+    let g = Game.create_with_solution p s in
+    match Game.check g with
+    | Game.Success _ -> ()
+    | _ -> assert_failure "expected check to return Success on incomplete but consistent puzzle"
+  ;;
+
+  let test_check_reports_win _ =
+    let size = 2 in
+    let row_clues = [| Puzzle.RLE []; Puzzle.RLE [] |] in
+    let col_clues = [| Puzzle.RLE []; Puzzle.RLE [] |] in
+    let p = Puzzle.create ~size ~row_clues ~col_clues in
+    let s =
+      let p1 = Puzzle.set p { x = 0; y = 0 } Puzzle.Empty in
+      let p2 = Puzzle.set p1 { x = 1; y = 0 } Puzzle.Empty in
+      let p3 = Puzzle.set p2 { x = 0; y = 1 } Puzzle.Empty in
+      let p4 = Puzzle.set p3 { x = 1; y = 1 } Puzzle.Empty in
+      p4
+    in
+    let g = Game.create_with_solution s s in
+    match Game.check g with
+    | Game.GameWon win ->
+        assert_equal 0 win.num_hints
+    | _ ->
+        assert_failure "expected check to report GameWon when puzzle matches solution"
+  ;;
+
+  let test_check_detects_contradiction _ =
+    let size = 2 in
+    let row_clues = [| Puzzle.RLE []; Puzzle.RLE [] |] in
+    let col_clues = [| Puzzle.RLE []; Puzzle.RLE [] |] in
+    let base = Puzzle.create ~size ~row_clues ~col_clues in
+    let solution =
+      let p1 = Puzzle.set base { x = 0; y = 0 } Puzzle.Filled in
+      p1
+    in
+    let puzzle_wrong =
+      let p1 = Puzzle.set base { x = 0; y = 0 } Puzzle.Empty in
+      p1
+    in
+    let g = Game.create_with_solution puzzle_wrong solution in
+    match Game.check g with
+    | Game.Error (Game.Contradiction _) -> ()
+    | _ -> assert_failure "expected check to detect a contradiction"
+  ;;
+
+  let test_hint_changes_one_cell_and_increments_counter _ =
+    let size = 2 in
+    let row_clues = [| Puzzle.RLE []; Puzzle.RLE [] |] in
+    let col_clues = [| Puzzle.RLE []; Puzzle.RLE [] |] in
+    let p = Puzzle.create ~size ~row_clues ~col_clues in
+    let s =
+      let p1 = Puzzle.set p { x = 0; y = 0 } Puzzle.Empty in
+      let p2 = Puzzle.set p1 { x = 1; y = 0 } Puzzle.Empty in
+      let p3 = Puzzle.set p2 { x = 0; y = 1 } Puzzle.Empty in
+      let p4 = Puzzle.set p3 { x = 1; y = 1 } Puzzle.Empty in
+      p4
+    in
+    let g = Game.create_with_solution p s in
+    match Game.hint g with
+    | Game.HintProvided (_pos, _state, g') ->
+        assert_equal 1 (Game.hints_used g');
+        let p' = Game.puzzle g' in
+        let cells =
+          [ Puzzle.get p' { x = 0; y = 0 }
+          ; Puzzle.get p' { x = 1; y = 0 }
+          ; Puzzle.get p' { x = 0; y = 1 }
+          ; Puzzle.get p' { x = 1; y = 1 }
+          ]
+        in
+        let non_unknown =
+          List.fold_left
+            (fun acc c -> if c = Puzzle.Unknown then acc else acc + 1)
+            0
+            cells
+        in
+        assert_equal 1 non_unknown
+    | _ ->
+        assert_failure "expected HintProvided from hint"
+  ;;
+
+  let test_autosolve_sets_puzzle_and_status _ =
+    let size = 2 in
+    let row_clues = [| Puzzle.RLE []; Puzzle.RLE [] |] in
+    let col_clues = [| Puzzle.RLE []; Puzzle.RLE [] |] in
+    let p = Puzzle.create ~size ~row_clues ~col_clues in
+    let s =
+      let p1 = Puzzle.set p { x = 0; y = 0 } Puzzle.Empty in
+      let p2 = Puzzle.set p1 { x = 1; y = 0 } Puzzle.Empty in
+      let p3 = Puzzle.set p2 { x = 0; y = 1 } Puzzle.Empty in
+      let p4 = Puzzle.set p3 { x = 1; y = 1 } Puzzle.Empty in
+      p4
+    in
+    let g = Game.create_with_solution p s in
+    match Game.autosolve g with
+    | Game.Success g' ->
+        assert_equal Game.Won (Game.status g');
+        let p' = Game.puzzle g' in
+        assert_equal Puzzle.Empty (Puzzle.get p' { x = 0; y = 0 });
+        assert_equal Puzzle.Empty (Puzzle.get p' { x = 1; y = 0 });
+        assert_equal Puzzle.Empty (Puzzle.get p' { x = 0; y = 1 });
+        assert_equal Puzzle.Empty (Puzzle.get p' { x = 1; y = 1 })
+    | _ ->
+        assert_failure "expected autosolve to return Success"
+  ;;
 
   let series =
     "Game tests" >::: 
     [ "initial status" >:: test_initial_status
     ; "fill cell changes board" >:: test_fill_cell_updates_puzzle
     ; "other actions update and reset" >:: test_other_actions_update_and_reset
+    ; "check incomplete ok" >:: test_check_incomplete_ok
+    ; "check reports win" >:: test_check_reports_win
+    ; "check detects contradiction" >:: test_check_detects_contradiction
+    ; "hint changes one cell and increments counter" >:: test_hint_changes_one_cell_and_increments_counter
+    ; "autosolve sets puzzle and status" >:: test_autosolve_sets_puzzle_and_status
     ]
 end
 
@@ -464,11 +592,17 @@ module Position_tests = struct
     assert_bool "p_left should come before p_right"
       (Position.compare p_left p_right < 0)
   ;;
+  let test_sexp_of_t_called _ =
+    let p = Position.{ x = 2; y = 3 } in
+    let _ = Position.sexp_of_t p in
+    ()
+  ;;
 
   let series =
     "Position tests" >::: 
     [ "equality" >:: test_equality
     ; "compare order" >:: test_compare_order
+    ; "sexp_of_t called" >:: test_sexp_of_t_called
     ]
 end
 

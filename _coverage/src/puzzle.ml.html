@@ -38,49 +38,34 @@
 <a id="L14"></a><span > </span>
 <a id="L15"></a><span > </span>
 <a id="L16"></a><span > </span>
-<a id="L17"></a><span class="visited"> </span>
-<a id="L18"></a><span class="visited"> </span>
-<a id="L19"></a><span class="visited"> </span>
+<a id="L17"></a><span > </span>
+<a id="L18"></a><span > </span>
+<a id="L19"></a><span > </span>
 <a id="L20"></a><span > </span>
-<a id="L21"></a><span > </span>
+<a id="L21"></a><span class="visited"> </span>
 <a id="L22"></a><span > </span>
-<a id="L23"></a><span > </span>
+<a id="L23"></a><span class="visited"> </span>
 <a id="L24"></a><span > </span>
 <a id="L25"></a><span > </span>
-<a id="L26"></a><span > </span>
-<a id="L27"></a><span > </span>
+<a id="L26"></a><span class="visited"> </span>
+<a id="L27"></a><span class="visited"> </span>
 <a id="L28"></a><span > </span>
-<a id="L29"></a><span > </span>
+<a id="L29"></a><span class="visited"> </span>
 <a id="L30"></a><span > </span>
 <a id="L31"></a><span class="visited"> </span>
 <a id="L32"></a><span > </span>
-<a id="L33"></a><span > </span>
-<a id="L34"></a><span class="visited"> </span>
+<a id="L33"></a><span class="visited"> </span>
+<a id="L34"></a><span > </span>
 <a id="L35"></a><span class="visited"> </span>
-<a id="L36"></a><span class="visited"> </span>
-<a id="L37"></a><span > </span>
-<a id="L38"></a><span > </span>
-<a id="L39"></a><span class="visited"> </span>
+<a id="L36"></a><span > </span>
+<a id="L37"></a><span class="visited"> </span>
+<a id="L38"></a><span class="visited"> </span>
+<a id="L39"></a><span > </span>
 <a id="L40"></a><span > </span>
 <a id="L41"></a><span class="visited"> </span>
 <a id="L42"></a><span class="visited"> </span>
 <a id="L43"></a><span > </span>
 <a id="L44"></a><span > </span>
-<a id="L45"></a><span > </span>
-<a id="L46"></a><span > </span>
-<a id="L47"></a><span class="visited"> </span>
-<a id="L48"></a><span class="visited"> </span>
-<a id="L49"></a><span > </span>
-<a id="L50"></a><span > </span>
-<a id="L51"></a><span class="visited"> </span>
-<a id="L52"></a><span class="visited"> </span>
-<a id="L53"></a><span > </span>
-<a id="L54"></a><span class="visited"> </span>
-<a id="L55"></a><span class="visited"> </span>
-<a id="L56"></a><span > </span>
-<a id="L57"></a><span > </span>
-<a id="L58"></a><span class="visited"> </span>
-<a id="L59"></a><span > </span>
 </pre>
       </div>
       <div id="text-layer">
@@ -129,21 +114,6 @@
 <a href="#L42">42</a>
 <a href="#L43">43</a>
 <a href="#L44">44</a>
-<a href="#L45">45</a>
-<a href="#L46">46</a>
-<a href="#L47">47</a>
-<a href="#L48">48</a>
-<a href="#L49">49</a>
-<a href="#L50">50</a>
-<a href="#L51">51</a>
-<a href="#L52">52</a>
-<a href="#L53">53</a>
-<a href="#L54">54</a>
-<a href="#L55">55</a>
-<a href="#L56">56</a>
-<a href="#L57">57</a>
-<a href="#L58">58</a>
-<a href="#L59">59</a>
 </pre>
 <pre><code class="ocaml">open Core
 
@@ -152,57 +122,42 @@ type cell_state =
   | Filled
   | Unknown
 
-type position = { x : int; y : int }
-
 type clue = RLE of int list [@@unboxed]
 
-(* Readded to use Map.Make instead of Poly *)
-module Position = struct
-  type t = position
+module Position = Position
 
-  let compare a b =
-    <span data-count="5278">m</span>atch Int.compare a.y b.y with
-    | <span data-count="2671">0</span> -&gt; Int.compare a.x b.x
-    | <span data-count="2607">n</span> -&gt; n
-end
-
-module PosMap = Stdlib.Map.Make (Position)
+type position = Position.t
 
 type t = {
   size : int;
-  grid : cell_state PosMap.t;
+  grid : cell_state Grid.t;
   row_clues : clue array;
   col_clues : clue array;
 }
 
-let size p = <span data-count="19">p</span>.size
+let size p = <span data-count="13">p</span>.size
 
-let get p pos =
-  <span data-count="1304">m</span>atch PosMap.find_opt pos p.grid with
-  | <span data-count="996">S</span>ome state -&gt; state
-  | <span data-count="308">N</span>one -&gt; Unknown
+let get p pos = <span data-count="292">G</span>rid.get p.grid pos
 
 let set p pos state =
-  <span data-count="98">l</span>et grid =
-    match state with
-    | <span data-count="1">U</span>nknown -&gt; PosMap.remov<span data-count="1">e</span> pos p.grid
-    | <span data-count="97">_</span> -&gt; PosMap.ad<span data-count="97">d</span> pos state p.grid
-  in
-  { p with grid }
+  <span data-count="105">l</span>et grid = Grid.set p.grid pos state in
+  <span data-count="105">{</span> p with grid }
 
-let rows p r =
-  <span data-count="88">L</span>ist.init p.size ~f:(fun x -&gt;
-      <span data-count="407">g</span>et p { x; y = r })
+let rows p r = <span data-count="1">G</span>rid.rows p.grid r
 
-let cols p c =
-  <span data-count="67">L</span>ist.init p.size ~f:(fun y -&gt;
-      <span data-count="308">g</span>et p { x = c; y })
+let cols p c = <span data-count="1">G</span>rid.cols p.grid c
 
-let row_clue p r = <span data-count="76">p</span>.row_clues.(r)
-let col_clue p c = <span data-count="76">p</span>.col_clues.(c)
+let fold_rows p ~init ~f = <span data-count="14">G</span>rid.fold_rows p.grid ~init ~f
+
+let fold_cols p ~init ~f = <span data-count="11">G</span>rid.fold_cols p.grid ~init ~f
+
+let row_clue p r = <span data-count="48">p</span>.row_clues.(r)
+let col_clue p c = <span data-count="48">p</span>.col_clues.(c)
 
 let create ~size ~row_clues ~col_clues =
-  <span data-count="13">l</span>et grid = PosMap.empty in
+  <span data-count="22">l</span>et grid =
+    Grid.create ~size ~init:(fun _ -&gt; <span data-count="135">U</span>nknown)
+  in
   { size; grid; row_clues; col_clues }
 </code></pre>
       </div>
