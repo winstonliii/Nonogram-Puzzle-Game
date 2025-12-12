@@ -787,14 +787,14 @@ let game_page_html (solution : Puzzle.t) (puzzle : Puzzle.t) : string =
                   formatTime(elapsed) +
                   " with " +
                   hintsUsed +
-                  " hint(s)!",
+                  " hint(s).",
                 "success"
               );
               showWin();
-            } else if (data.status === "incomplete") {
-              log("Check: puzzle is incomplete.", "warn");
+            } else if (data.status === "ok") {
+              log("Check: no mistakes so far.", "success");
             } else if (data.status === "invalid") {
-              log("Check: puzzle does not match the clues.", "warn");
+              log("Check: there is at least one mistake.", "warn");
             } else if (data.status === "no_game") {
               log("Check: no game running.", "warn");
             } else {
@@ -969,11 +969,9 @@ let () =
              (match Game.check g with
               | Game.GameWon _ ->
                   Dream.json {|{"status":"won"}|}
-              | Game.Error Game.IncompletePuzzle ->
-                  Dream.json {|{"status":"incomplete"}|}
               | Game.Error (Game.Contradiction _) ->
                   Dream.json {|{"status":"invalid"}|}
-              | Game.Error (Game.InvalidAction _) ->
+              | Game.Error _ ->
                   Dream.json {|{"status":"error"}|}
               | Game.Success _ | Game.HintProvided _ ->
                   Dream.json {|{"status":"ok"}|}));

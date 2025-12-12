@@ -104,14 +104,33 @@ let process_action (g : t) (a : action) : action_result =
   | Quit -> Success g
 
 let check (g : t) : action_result =
-  match Validator.validate g.puzzle with
-  | Validator.Valid ->
-      let win = { time = Mtime.Span.zero; num_hints = 0; score = 0 } in
-      GameWon win
-  | Validator.Incomplete ->
-      Error IncompletePuzzle
-  | Validator.Invalid _ ->
-      Error (Contradiction "Puzzle does not match clues")
+  let n = Puzzle.size g.puzzle in
+  let rec loop x y has_unknown =
+    if y >= n then
+      (has_unknown, false)
+    else if x >= n then
+      loop 0 (y + 1) has_unknown
+    else
+      let pos = Position.{ x; y } in
+      let current = Puzzle.get g.puzzle pos in
+      let target = Puzzle.get g.solution pos in
+      match current, target with
+      | Puzzle.Unknown, _ ->
+          loop (x + 1) y true
+      | Puzzle.Filled, Puzzle.Filled
+      | Puzzle.Empty, (Puzzle.Empty | Puzzle.Unknown) ->
+          loop (x + 1) y has_unknown
+      | _ ->
+          (has_unknown, true)
+  in
+  let has_unknown, has_error = loop 0 0 false in
+  if has_error then
+    Error (Contradiction "Puzzle does not match solution")
+  else if has_unknown then
+    Success g
+  else
+    let win = { time = Mtime.Span.zero; num_hints = 0; score = 0 } in
+    GameWon win
   
 let hint (g : t) : action_result =
   let n = Puzzle.size g.puzzle in
