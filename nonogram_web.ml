@@ -994,7 +994,7 @@ let () =
                   | Game.Error _ ->
                       Dream.json {|{"status":"error"}|}
                   | Game.HintProvided _ ->
-                      Dream.json {|{"status":"hint"}"|})
+                      Dream.json {|{"status":"hint"}|})
          | _ ->
              Dream.json {|{"status":"bad_request"}"|});
 
