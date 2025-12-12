@@ -102,3 +102,59 @@ let process_action (g : t) (a : action) : action_result =
       Success g2
 
   | Quit -> Success g
+
+let check (g : t) : action_result =
+  match Validator.validate g.puzzle with
+  | Validator.Valid ->
+      let win = { time = Mtime.Span.zero; num_hints = 0; score = 0 } in
+      GameWon win
+  | Validator.Incomplete ->
+      Error IncompletePuzzle
+  | Validator.Invalid _ ->
+      Error (Contradiction "Puzzle does not match clues")
+  
+let hint (g : t) : action_result =
+  let n = Puzzle.size g.puzzle in
+
+  let candidates =
+    let rec loop x y acc =
+      if y >= n then
+        acc
+      else if x >= n then
+        loop 0 (y + 1) acc
+      else
+        let pos = Position.{ x; y } in
+        let current = Puzzle.get g.puzzle pos in
+        let target = Puzzle.get g.solution pos in
+        let should_be =
+          match target with
+          | Puzzle.Filled -> Puzzle.Filled
+          | Puzzle.Empty | Puzzle.Unknown -> Puzzle.Empty
+        in
+        if current = should_be then
+          loop (x + 1) y acc
+        else
+          loop (x + 1) y ((pos, should_be) :: acc)
+    in
+    loop 0 0 []
+  in
+
+  match candidates with
+  | [] ->
+      if is_solved g then
+        let win = { time = Mtime.Span.zero; num_hints = 0; score = 0 } in
+        GameWon win
+      else
+        Error IncompletePuzzle
+  | _ ->
+      let len = List.length candidates in
+      let idx = Random.int len in
+      let pos, new_state = List.nth candidates idx in
+      let puzzle' = Puzzle.set g.puzzle pos new_state in
+      let g' = { g with puzzle = puzzle' } in
+      HintProvided (pos, new_state, g')
+
+  
+let autosolve (g : t) : action_result =
+  let g' = { g with puzzle = g.solution; status = Won } in
+  Success g'  

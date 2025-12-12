@@ -37,3 +37,6 @@ val create : Puzzle.t -> t
 val puzzle : t -> Puzzle.t
 val status : t -> status
 val process_action : t -> action -> action_result
+val check : t -> action_result
+val hint : t -> action_result
+val autosolve : t -> action_result

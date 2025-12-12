@@ -771,59 +771,86 @@ let game_page_html (solution : Puzzle.t) (puzzle : Puzzle.t) : string =
         log("Puzzle restarted.", "info");
       }
 
-      function isSolvedCorrectly() {
-        for (let y = 0; y < SIZE; y++) {
-          for (let x = 0; x < SIZE; x++) {
-            const target = SOLUTION[y][x];
-            const state = gridState[y][x];
-            if (state === 0) return false;
-            if (target === 1 && state !== 1) return false;
-            if (target === 0 && state === 1) return false;
-          }
-        }
-        return true;
-      }
-
       function onCheck() {
-        if (isSolvedCorrectly()) {
-          solved = true;
-          stopTimer();
-          log(
-            "Puzzle solved correctly in " + formatTime(elapsed) + " with " + hintsUsed + " hint(s)! 🎉",
-            "success"
-          );
-          showWin();
-        } else {
-          log("Check failed: puzzle is incorrect or incomplete.", "warn");
-        }
+        if (solved) return;
+
+        fetch("/api/check", {
+          method: "POST",
+        })
+          .then((res) => res.json())
+          .then((data) => {
+            if (data.status === "won") {
+              solved = true;
+              stopTimer();
+              log(
+                "Puzzle solved correctly in " +
+                  formatTime(elapsed) +
+                  " with " +
+                  hintsUsed +
+                  " hint(s)!",
+                "success"
+              );
+              showWin();
+            } else if (data.status === "incomplete") {
+              log("Check: puzzle is incomplete.", "warn");
+            } else if (data.status === "invalid") {
+              log("Check: puzzle does not match the clues.", "warn");
+            } else if (data.status === "no_game") {
+              log("Check: no game running.", "warn");
+            } else {
+              log("Check: unexpected response from server.", "warn");
+            }
+          })
+          .catch((err) => {
+            console.error("check error", err);
+            log("Check failed due to a server error.", "warn");
+          });
       }
 
       function giveHint() {
         if (solved) return;
-        const candidates = [];
-        for (let y = 0; y < SIZE; y++) {
-          for (let x = 0; x < SIZE; x++) {
-            const target = SOLUTION[y][x];
-            const state = gridState[y][x];
-            const shouldBe = target === 1 ? 1 : 2;
-            if (state !== shouldBe) {
-              candidates.push({ x, y, state: shouldBe });
-            }
-          }
-        }
-        if (candidates.length === 0) {
-          log("No hint available: puzzle already matches solution.", "info");
-          return;
-        }
-        const choice = candidates[Math.floor(Math.random() * candidates.length)];
-        gridState[choice.y][choice.x] = choice.state;
-        const sel = document.querySelector(
-          `.cell[data-x="${choice.x}"][data-y="${choice.y}"]`
-        );
-        if (sel) updateCellVisual(sel, choice.state);
 
-        hintsUsed += 1;
-        log("Hint used at (" + (choice.x + 1) + ", " + (choice.y + 1) + ").", "info");
+        fetch("/api/hint", {
+          method: "POST",
+        })
+          .then((res) => res.json())
+          .then((data) => {
+            if (data.status === "ok") {
+              const x = data.x;
+              const y = data.y;
+              const state = data.state;
+
+              gridState[y][x] = state;
+
+              const sel = document.querySelector(
+                `.cell[data-x="${x}"][data-y="${y}"]`
+              );
+              if (sel) {
+                updateCellVisual(sel, state);
+              }
+
+              hintsUsed += 1;
+              log(
+                "Hint used at (" + (x + 1) + ", " + (y + 1) + ").",
+                "info"
+              );
+            } else if (data.status === "won") {
+              solved = true;
+              stopTimer();
+              log("Puzzle already solved.", "success");
+              showWin();
+            } else if (data.status === "none") {
+              log("No hint available.", "info");
+            } else if (data.status === "no_game") {
+              log("Hint: no game running.", "warn");
+            } else {
+              log("Hint failed: unexpected response from server.", "warn");
+            }
+          })
+          .catch((err) => {
+            console.error("hint error", err);
+            log("Hint failed due to a server error.", "warn");
+          });
       }
 
       function autosolve() {
@@ -933,4 +960,47 @@ let () =
                       Dream.json {|{"status":"hint"}"|})
          | _ ->
              Dream.json {|{"status":"bad_request"}"|});
+
+       Dream.post "/api/check" (fun _req ->
+         match !current_game with
+         | None ->
+             Dream.json {|{"status":"no_game"}|}
+         | Some g ->
+             (match Game.check g with
+              | Game.GameWon _ ->
+                  Dream.json {|{"status":"won"}|}
+              | Game.Error Game.IncompletePuzzle ->
+                  Dream.json {|{"status":"incomplete"}|}
+              | Game.Error (Game.Contradiction _) ->
+                  Dream.json {|{"status":"invalid"}|}
+              | Game.Error (Game.InvalidAction _) ->
+                  Dream.json {|{"status":"error"}|}
+              | Game.Success _ | Game.HintProvided _ ->
+                  Dream.json {|{"status":"ok"}|}));
+
+       Dream.post "/api/hint" (fun _req ->
+         match !current_game with
+         | None ->
+             Dream.json {|{"status":"no_game"}|}
+         | Some g ->
+             (match Game.hint g with
+              | Game.HintProvided (pos, state, g') ->
+                  current_game := Some g';
+                  let Position.{ x; y } = pos in
+                  let state_int =
+                    match state with
+                    | Puzzle.Unknown -> 0
+                    | Puzzle.Filled -> 1
+                    | Puzzle.Empty -> 2
+                  in
+                  Dream.json
+                    (Printf.sprintf
+                       {|{"status":"ok","x":%d,"y":%d,"state":%d}|}
+                       x y state_int)
+              | Game.GameWon _ ->
+                  Dream.json {|{"status":"won"}|}
+              | Game.Error _ ->
+                  Dream.json {|{"status":"error"}|}
+              | Game.Success _ ->
+                  Dream.json {|{"status":"none"}|}))
      ])
