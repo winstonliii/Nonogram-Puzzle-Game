@@ -741,21 +741,38 @@ let game_page_html (solution : Puzzle.t) (puzzle : Puzzle.t) : string =
           .then((res) => res.json())
           .then((data) => {
             if (data.status === "won") {
+              if (typeof data.hints === "number") {
+                hintsUsed = data.hints;
+              }
               solved = true;
               stopTimer();
               log(
-                "Puzzle solved in " + formatTime(elapsed) + " with " + hintsUsed + " hint(s)!",
+                "Puzzle solved in " +
+                  formatTime(elapsed) +
+                  " with " +
+                  hintsUsed +
+                  " hint(s).",
                 "success"
               );
               showWin();
             }
-          })
-          .catch((err) => {
-            console.error("update error", err);
           });
       }
 
       function resetGrid() {
+        fetch("/api/restart", {
+          method: "POST",
+        })
+          .then((res) => res.json())
+          .then((data) => {
+            if (data.status !== "ok" && data.status !== "no_game") {
+              console.warn("restart error", data);
+            }
+          })
+          .catch((err) => {
+            console.error("restart error", err);
+          });
+
         gridState = Array.from({ length: SIZE }, () =>
           Array.from({ length: SIZE }, () => 0)
         );
@@ -780,6 +797,9 @@ let game_page_html (solution : Puzzle.t) (puzzle : Puzzle.t) : string =
           .then((res) => res.json())
           .then((data) => {
             if (data.status === "won") {
+              if (typeof data.hints === "number") {
+                hintsUsed = data.hints;
+              }
               solved = true;
               stopTimer();
               log(
@@ -821,7 +841,6 @@ let game_page_html (solution : Puzzle.t) (puzzle : Puzzle.t) : string =
               const state = data.state;
 
               gridState[y][x] = state;
-
               const sel = document.querySelector(
                 `.cell[data-x="${x}"][data-y="${y}"]`
               );
@@ -829,7 +848,10 @@ let game_page_html (solution : Puzzle.t) (puzzle : Puzzle.t) : string =
                 updateCellVisual(sel, state);
               }
 
-              hintsUsed += 1;
+              if (typeof data.hints === "number") {
+                hintsUsed = data.hints;
+              }
+
               log(
                 "Hint used at (" + (x + 1) + ", " + (y + 1) + ").",
                 "info"
@@ -854,6 +876,19 @@ let game_page_html (solution : Puzzle.t) (puzzle : Puzzle.t) : string =
       }
 
       function autosolve() {
+        fetch("/api/autosolve", {
+          method: "POST",
+        })
+          .then((res) => res.json())
+          .then((data) => {
+            if (data.status !== "ok" && data.status !== "won") {
+              console.warn("autosolve error", data);
+            }
+          })
+          .catch((err) => {
+            console.error("autosolve error", err);
+          });
+
         for (let y = 0; y < SIZE; y++) {
           for (let x = 0; x < SIZE; x++) {
             const target = SOLUTION[y][x];
@@ -951,9 +986,11 @@ let () =
                   | Game.Success g' ->
                       current_game := Some g';
                       Dream.json {|{"status":"ok"}|}
-                  | Game.GameWon _ ->
-                      current_game := Some g;
-                      Dream.json {|{"status":"won"}|}
+                  | Game.GameWon win ->
+                      Dream.json
+                        (Printf.sprintf
+                          {|{"status":"won","hints":%d}|}
+                          win.num_hints)
                   | Game.Error _ ->
                       Dream.json {|{"status":"error"}|}
                   | Game.HintProvided _ ->
@@ -967,8 +1004,11 @@ let () =
              Dream.json {|{"status":"no_game"}|}
          | Some g ->
              (match Game.check g with
-              | Game.GameWon _ ->
-                  Dream.json {|{"status":"won"}|}
+             | Game.GameWon win ->
+              Dream.json
+                (Printf.sprintf
+                   {|{"status":"won","hints":%d}|}
+                   win.num_hints)
               | Game.Error (Game.Contradiction _) ->
                   Dream.json {|{"status":"invalid"}|}
               | Game.Error _ ->
@@ -983,22 +1023,48 @@ let () =
          | Some g ->
              (match Game.hint g with
               | Game.HintProvided (pos, state, g') ->
-                  current_game := Some g';
-                  let Position.{ x; y } = pos in
-                  let state_int =
-                    match state with
-                    | Puzzle.Unknown -> 0
-                    | Puzzle.Filled -> 1
-                    | Puzzle.Empty -> 2
-                  in
-                  Dream.json
-                    (Printf.sprintf
-                       {|{"status":"ok","x":%d,"y":%d,"state":%d}|}
-                       x y state_int)
+                current_game := Some g';
+                let Position.{ x; y } = pos in
+                let state_int =
+                  match state with
+                  | Puzzle.Unknown -> 0
+                  | Puzzle.Filled -> 1
+                  | Puzzle.Empty -> 2
+                in
+                Dream.json
+                  (Printf.sprintf
+                    {|{"status":"ok","x":%d,"y":%d,"state":%d,"hints":%d}|}
+                    x y state_int (Game.hints_used g'))
               | Game.GameWon _ ->
                   Dream.json {|{"status":"won"}|}
               | Game.Error _ ->
                   Dream.json {|{"status":"error"}|}
               | Game.Success _ ->
-                  Dream.json {|{"status":"none"}|}))
+                  Dream.json {|{"status":"none"}|}));
+
+       Dream.post "/api/restart" (fun _req ->
+         match !current_game with
+         | None ->
+             Dream.json {|{"status":"no_game"}|}
+         | Some g ->
+             (match Game.process_action g Game.RestartPuzzle with
+              | Game.Success g' ->
+                  current_game := Some g';
+                  Dream.json {|{"status":"ok"}|}
+              | _ ->
+                  Dream.json {|{"status":"error"}"|}));
+       Dream.post "/api/autosolve" (fun _req ->
+         match !current_game with
+         | None ->
+             Dream.json {|{"status":"no_game"}|}
+         | Some g ->
+             (match Game.autosolve g with
+              | Game.Success g' ->
+                  current_game := Some g';
+                  Dream.json {|{"status":"ok"}|}
+              | Game.GameWon _ ->
+                  Dream.json {|{"status":"won"}|}
+              | _ ->
+                  Dream.json {|{"status":"error"}"|}));
+
      ])

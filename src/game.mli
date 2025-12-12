@@ -7,11 +7,9 @@ type action =
   | RestartPuzzle
   | Quit
 
-type win = {
-  time : Mtime.span;
-  num_hints : int;
-  score : int;
-}
+  type win = {
+    num_hints : int;
+  }  
 
 (* Errors that game-related operations may report. *)
 type error =
@@ -40,3 +38,4 @@ val process_action : t -> action -> action_result
 val check : t -> action_result
 val hint : t -> action_result
 val autosolve : t -> action_result
+val hints_used : t -> int

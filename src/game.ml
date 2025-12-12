@@ -4,11 +4,9 @@ type action =
   | RestartPuzzle
   | Quit
 
-type win = {
-  time : Mtime.span;
-  num_hints : int;
-  score : int;
-}
+  type win = {
+    num_hints : int;
+  }  
 
 (* Errors that game-related operations may report. *)
 type error =
@@ -27,8 +25,7 @@ type t = {
   initial_puzzle : Puzzle.t;
   solution : Puzzle.t;
   status : status;
-  (*hints_used : int;
-  start_time : Mtime.t;*)
+  hints_used : int;
 }
 
 (* Result of processing an action. *)
@@ -45,8 +42,7 @@ let create_with_solution (p : Puzzle.t) (solution : Puzzle.t) : t =
     initial_puzzle = p;
     solution;
     status = InProgress;
-    (* hints_used = 0;
-       start_time = Mtime_clock.now (); *)
+    hints_used = 0;
   }
 
 let create (p : Puzzle.t) : t =
@@ -54,6 +50,7 @@ let create (p : Puzzle.t) : t =
 
 let puzzle (a : t) = a.puzzle
 let status (a : t) = a.status
+let hints_used (a : t) = a.hints_used
 
 (* Internal helper to check if the game is solved *)
 let is_solved (g : t) : bool =
@@ -80,11 +77,7 @@ let process_action (g : t) (a : action) : action_result =
       let puzzle' = Puzzle.set g.puzzle pos new_state in
       let g' = { g with puzzle = puzzle' } in
       if is_solved g' then
-        let win = {
-          time = Mtime.Span.zero;
-          num_hints = 0;
-          score = 0;
-        } in
+        let win = { num_hints = g'.hints_used } in
         GameWon win
       else
         Success g'
@@ -95,8 +88,7 @@ let process_action (g : t) (a : action) : action_result =
           g with
           puzzle = g.initial_puzzle;
           status = InProgress;
-          (*hints_used = 0;
-            start_time = Mtime_clock.now ();*)
+          hints_used = 0;
         }
       in
       Success g2
@@ -129,7 +121,7 @@ let check (g : t) : action_result =
   else if has_unknown then
     Success g
   else
-    let win = { time = Mtime.Span.zero; num_hints = 0; score = 0 } in
+    let win = { num_hints = g.hints_used } in
     GameWon win
   
 let hint (g : t) : action_result =
@@ -160,17 +152,17 @@ let hint (g : t) : action_result =
 
   match candidates with
   | [] ->
-      if is_solved g then
-        let win = { time = Mtime.Span.zero; num_hints = 0; score = 0 } in
-        GameWon win
-      else
-        Error IncompletePuzzle
+    if is_solved g then
+      let win = { num_hints = g.hints_used } in
+      GameWon win
+    else
+      Error IncompletePuzzle
   | _ ->
       let len = List.length candidates in
       let idx = Random.int len in
       let pos, new_state = List.nth candidates idx in
       let puzzle' = Puzzle.set g.puzzle pos new_state in
-      let g' = { g with puzzle = puzzle' } in
+      let g' = { g with puzzle = puzzle'; hints_used = g.hints_used + 1 } in
       HintProvided (pos, new_state, g')
 
   
