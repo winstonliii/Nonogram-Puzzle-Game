@@ -8,7 +8,7 @@ type solve_result =
 
 type line = Line of cell_state list [@@unboxed]
 
-
+(* checks whether a candidate full placement is consistent with the current partially known cells*)
 let compatible_line (known : cell_state list) (candidate : cell_state list) : bool =
   List.zip_exn known candidate
   |> List.for_all ~f:(fun (k, c) ->
@@ -17,6 +17,7 @@ let compatible_line (known : cell_state list) (candidate : cell_state list) : bo
          | Filled -> phys_equal c Filled
          | Empty -> phys_equal c Empty)
 
+(*turns block segments into a full line*)
 let build_candidate (len : int) (segments : (int * int) list)
   : cell_state list =
   List.init len ~f:(fun j ->
@@ -24,18 +25,19 @@ let build_candidate (len : int) (segments : (int * int) list)
     then Filled
     else Empty)
 
+(* generates every possible full line *)
 let all_placements (RLE runs : clue) (known : cell_state list)
   : cell_state list list =
   let len = List.length known in
   match runs with
-  | [] ->
+  | [] -> (*clue line is empty so line is all empty*)
       let candidate = List.init len ~f:(fun _ -> Empty) in
       if compatible_line known candidate then [ candidate ] else []
   | _ ->
       let rec min_len = function
         | [] -> 0
         | [ x ] -> x
-        | x :: xs -> x + 1 + min_len xs
+        | x :: xs -> x + 1 + min_len xs (*min cells needed for the run*)
       in
       let rec place runs i segments =
         match runs with
@@ -57,7 +59,7 @@ let all_placements (RLE runs : clue) (known : cell_state list)
       in
       place runs 0 []
 
-
+(* deduce forced cells across every valid placement *)
 let intersect_placements (placements : cell_state list list)
   : cell_state list =
   match placements with
@@ -67,15 +69,15 @@ let intersect_placements (placements : cell_state list list)
         List.map2_exn acc p ~f:(fun a b ->
           if phys_equal a b then a else Unknown))
 
-
+(*deterministic*)
 let solve_line clue (Line cells as line) : line =
   let placements = all_placements clue cells in
   match placements with
   | [] -> line
-  | [ single ] -> Line single
-  | many -> Line (intersect_placements many)
+  | [ single ] -> Line single (*one valid completion for the line *)
+  | many -> Line (intersect_placements many) (*multiple ways line can be completed*)
 
-let propagate_once (p : t)
+let propagate_once (p : t) (* scan all rows, then cols applying forced deductions *)
   : [ `Ok of t * bool | `Contradiction ] =
   let row_result =
     fold_rows p
@@ -89,9 +91,9 @@ let propagate_once (p : t)
             if List.is_empty placements then
               `Contradiction
             else
-              let Line new_row = solve_line clue (Line row_cells) in
+              let Line new_row = solve_line clue (Line row_cells) in (* solves row *)
               let p', changed_row =
-                List.foldi new_row ~init:(p_acc, false)
+                List.foldi new_row ~init:(p_acc, false) (*each update returns new puzzle*)
                   ~f:(fun x (p_grid, chg) new_c ->
                     let pos = Position.{ x; y = r } in
                     let old_c = get p_grid pos in
@@ -117,7 +119,7 @@ let propagate_once (p : t)
                 if List.is_empty placements then
                   `Contradiction
                 else
-                  let Line new_col = solve_line clue (Line col_cells) in
+                  let Line new_col = solve_line clue (Line col_cells) in (*solves col*)
                   let p', changed_col =
                     List.foldi new_col ~init:(p_acc, false)
                       ~f:(fun y (p_grid, chg) new_c ->
@@ -138,13 +140,13 @@ let rec propagate (p : t) : [ `Ok of t | `Contradiction ] =
   | `Ok (p', changed) ->
       if changed then propagate p' else `Ok p'
 
-
+(* returns unknown for backtracking *)
 let has_unknown (p : t) : bool =
   fold_rows p ~init:false
     ~f:(fun acc _ row_cells ->
       acc
       || List.exists row_cells ~f:(fun c -> phys_equal c Unknown))
-
+(* pick the first Unknown cell in row-major order *)
 let choose_unknown (p : t) : position option =
   let n = size p in
   let rec find_row y =
@@ -159,7 +161,7 @@ let choose_unknown (p : t) : position option =
 
 
 let solve (p0 : t) : solve_result =
-  let max_solutions = 2 in
+  let max_solutions = 2 in (* check multi solutions *)
   let rec search (p : t) (solutions : t list) : t list =
     if List.length solutions >= max_solutions then
       solutions
@@ -167,20 +169,20 @@ let solve (p0 : t) : solve_result =
       match propagate p with
       | `Contradiction -> solutions
       | `Ok p' ->
-          if not (has_unknown p') then
+          if not (has_unknown p') then (* puzzle has no unkowns then solution found *)
             p' :: solutions
           else
-            match choose_unknown p' with
+            match choose_unknown p' with (* choose an unknown *)
             | None ->
                 solutions
             | Some pos ->
                 let solutions_after_filled =
-                  search (set p' pos Filled) solutions
+                  search (set p' pos Filled) solutions (* assume unknown cell is filled*)
                 in
                 if List.length solutions_after_filled >= max_solutions then
                   solutions_after_filled
                 else
-                  search (set p' pos Empty) solutions_after_filled
+                  search (set p' pos Empty) solutions_after_filled (* assume unknown cell is empty *)
   in
   let solutions = search p0 [] in
   match solutions with
