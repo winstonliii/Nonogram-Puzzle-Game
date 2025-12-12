@@ -94,7 +94,6 @@ let generate (params : generation_params) : generation_result =
           let puzzle = create ~size ~row_clues ~col_clues in
           match Solver.solve puzzle with
           | Solver.NoSolution
-          | PartialSolution _
           | MultipleSolutions _ ->
               attempt (n - 1)
           | Solved solved_puzzle ->

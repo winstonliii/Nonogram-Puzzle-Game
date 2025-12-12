@@ -521,8 +521,6 @@ module Solver_tests = struct
         done
     | Solver.NoSolution ->
         assert_failure "Expected cross puzzle to have a solution"
-    | Solver.PartialSolution _ ->
-        assert_failure "Expected a full solution, not partial"
     | Solver.MultipleSolutions _ ->
         assert_failure "Expected unique solution, not multiple"
   ;;

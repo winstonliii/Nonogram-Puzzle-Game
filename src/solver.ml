@@ -2,10 +2,9 @@ open Core
 open Puzzle
 
 type solve_result =
-  | Solved of t
-  | NoSolution
-  | PartialSolution of t
-  | MultipleSolutions of t list
+  | Solved of t (*found exactly one full solution*)
+  | NoSolution 
+  | MultipleSolutions of t list (*solver found at least 2 distinct solutions*)
 
 type line = Line of cell_state list [@@unboxed]
 

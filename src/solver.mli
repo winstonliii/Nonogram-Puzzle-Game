@@ -2,7 +2,6 @@
 type solve_result =
   | Solved of Puzzle.t 
   | NoSolution
-  | PartialSolution of Puzzle.t
   | MultipleSolutions of Puzzle.t list
 
 (* The type representing a line (row or column) in the puzzle. *)
