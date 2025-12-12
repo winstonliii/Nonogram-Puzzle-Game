@@ -251,6 +251,35 @@ module Game_tests = struct
         assert_failure "expected autosolve to return Success"
   ;;
 
+let test_unsolved_with_unknowns _ =
+  let size = 2 in
+  let row_clues = [| Puzzle.RLE []; Puzzle.RLE [] |] in
+  let col_clues = [| Puzzle.RLE []; Puzzle.RLE [] |] in
+  let p = Puzzle.create ~size ~row_clues ~col_clues in
+
+  let s =
+    let p1 = Puzzle.set p { x = 0; y = 0 } Puzzle.Empty in
+    let p2 = Puzzle.set p1 { x = 1; y = 0 } Puzzle.Empty in
+    let p3 = Puzzle.set p2 { x = 0; y = 1 } Puzzle.Empty in
+    let p4 = Puzzle.set p3 { x = 1; y = 1 } Puzzle.Empty in
+    p4
+  in
+
+  let g = Game.create_with_solution p s in
+
+  let g1 =
+    match Game.process_action g (Game.UpdateCell { pos = { x=0; y=0 }; new_state = Puzzle.Empty }) with
+    | Game.Success g' -> g'
+    | _ -> assert_failure "should not win yet"
+  in
+
+  match Game.process_action g1 (Game.UpdateCell { pos = { x=1; y=0 }; new_state = Puzzle.Empty }) with
+  | Game.Success _ -> ()
+  | Game.GameWon _ -> assert_failure "should not win while Unknown remain"
+  | _ -> assert_failure "unexpected case"
+;;
+
+
   let series =
     "Game tests" >::: 
     [ "initial status" >:: test_initial_status
@@ -261,6 +290,7 @@ module Game_tests = struct
     ; "check detects contradiction" >:: test_check_detects_contradiction
     ; "hint changes one cell and increments counter" >:: test_hint_changes_one_cell_and_increments_counter
     ; "autosolve sets puzzle and status" >:: test_autosolve_sets_puzzle_and_status
+    ; "unsolved with unknowns" >:: test_unsolved_with_unknowns
     ]
 end
 

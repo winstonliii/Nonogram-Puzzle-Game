@@ -62,12 +62,14 @@ let is_solved (g : t) : bool =
       loop 0 (y + 1)
     else
       let pos = Position.{ x; y } in
-      let a = Puzzle.get g.puzzle pos in
-      let b = Puzzle.get g.solution pos in
-      if a = b then
-        loop (x + 1) y
-      else
-        false
+      let current = Puzzle.get g.puzzle pos in
+      let target = Puzzle.get g.solution pos in
+      match current, target with
+      | Puzzle.Filled, Puzzle.Filled
+      | Puzzle.Empty, (Puzzle.Empty | Puzzle.Unknown) ->
+          loop (x + 1) y
+      | _ ->
+          false
   in
   loop 0 0
 
