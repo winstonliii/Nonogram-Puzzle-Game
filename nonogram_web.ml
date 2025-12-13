@@ -998,23 +998,22 @@ let () =
          | _ ->
              Dream.json {|{"status":"bad_request"}"|});
 
-       Dream.post "/api/check" (fun _req ->
-         match !current_game with
-         | None ->
-             Dream.json {|{"status":"no_game"}|}
-         | Some g ->
-             (match Game.check g with
-             | Game.GameWon win ->
-              Dream.json
-                (Printf.sprintf
-                   {|{"status":"won","hints":%d}|}
-                   win.num_hints)
-              | Game.Error (Game.Contradiction _) ->
-                  Dream.json {|{"status":"invalid"}|}
-              | Game.Error _ ->
-                  Dream.json {|{"status":"error"}|}
-              | Game.Success _ | Game.HintProvided _ ->
-                  Dream.json {|{"status":"ok"}|}));
+             Dream.post "/api/check" (fun _req ->
+              match !current_game with
+              | None ->
+                  Dream.json {|{"status":"no_game"}|}
+              | Some g ->
+                  (match Validator.validate (Game.puzzle g) with
+                   | Validator.Valid ->
+                       Dream.json
+                         (Printf.sprintf
+                            {|{"status":"won","hints":%d}|}
+                            (Game.hints_used g))
+                   | Validator.Incomplete ->
+                       Dream.json {|{"status":"ok"}|}
+                   | Validator.Invalid _ ->
+                       Dream.json {|{"status":"invalid"}|}));
+     
 
        Dream.post "/api/hint" (fun _req ->
          match !current_game with
