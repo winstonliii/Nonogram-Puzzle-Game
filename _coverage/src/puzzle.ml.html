@@ -135,28 +135,28 @@ type t = {
   col_clues : clue array;
 }
 
-let size p = <span data-count="13">p</span>.size
+let size p = <span data-count="16">p</span>.size
 
-let get p pos = <span data-count="292">G</span>rid.get p.grid pos
+let get p pos = <span data-count="652">G</span>rid.get p.grid pos
 
 let set p pos state =
-  <span data-count="105">l</span>et grid = Grid.set p.grid pos state in
-  <span data-count="105">{</span> p with grid }
+  <span data-count="140">l</span>et grid = Grid.set p.grid pos state in
+  <span data-count="140">{</span> p with grid }
 
-let rows p r = <span data-count="1">G</span>rid.rows p.grid r
+let rows p r = <span data-count="5">G</span>rid.rows p.grid r
 
 let cols p c = <span data-count="1">G</span>rid.cols p.grid c
 
-let fold_rows p ~init ~f = <span data-count="14">G</span>rid.fold_rows p.grid ~init ~f
+let fold_rows p ~init ~f = <span data-count="24">G</span>rid.fold_rows p.grid ~init ~f
 
-let fold_cols p ~init ~f = <span data-count="11">G</span>rid.fold_cols p.grid ~init ~f
+let fold_cols p ~init ~f = <span data-count="18">G</span>rid.fold_cols p.grid ~init ~f
 
-let row_clue p r = <span data-count="48">p</span>.row_clues.(r)
-let col_clue p c = <span data-count="48">p</span>.col_clues.(c)
+let row_clue p r = <span data-count="83">p</span>.row_clues.(r)
+let col_clue p c = <span data-count="83">p</span>.col_clues.(c)
 
 let create ~size ~row_clues ~col_clues =
-  <span data-count="22">l</span>et grid =
-    Grid.create ~size ~init:(fun _ -&gt; <span data-count="135">U</span>nknown)
+  <span data-count="24">l</span>et grid =
+    Grid.create ~size ~init:(fun _ -&gt; <span data-count="164">U</span>nknown)
   in
   { size; grid; row_clues; col_clues }
 </code></pre>

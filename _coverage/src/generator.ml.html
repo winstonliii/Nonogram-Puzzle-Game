@@ -3,7 +3,7 @@
   <head>
     <meta charset="utf-8"/>
     <title>generator.ml &mdash; Coverage report</title>
-    <meta name="description" content="88.24% coverage in src/generator.ml">
+    <meta name="description" content="92.00% coverage in src/generator.ml">
     <link rel="stylesheet" href="../coverage.css"/>
     <script src="../highlight.pack.js"></script>
     <script>hljs.initHighlightingOnLoad();</script>
@@ -15,15 +15,13 @@
           <span class="dirname">src/</span>generator.ml
         </a>
       </h1>
-      <h2>88.24%</h2>
+      <h2>92.00%</h2>
     </div>
     <div id="navbar">
-      <span class="some-visited" style="bottom:48.18%"></span>
-      <span class="unvisited" style="bottom:18.18%"></span>
-      <span class="unvisited" style="bottom:12.73%"></span>
-      <span class="unvisited" style="bottom:11.82%"></span>
-      <span class="unvisited" style="bottom:10.91%"></span>
-      <span class="unvisited" style="bottom:2.73%"></span>
+      <span class="some-visited" style="bottom:47.71%"></span>
+      <span class="unvisited" style="bottom:17.43%"></span>
+      <span class="unvisited" style="bottom:11.93%"></span>
+      <span class="unvisited" style="bottom:2.75%"></span>
     </div>
     <div id="report">
       <div id="lines-layer">
@@ -124,20 +122,19 @@
 <a id="L94"></a><span class="visited"> </span>
 <a id="L95"></a><span > </span>
 <a id="L96"></a><span class="unvisited"> </span>
-<a id="L97"></a><span class="unvisited"> </span>
-<a id="L98"></a><span class="unvisited"> </span>
-<a id="L99"></a><span > </span>
-<a id="L100"></a><span class="visited"> </span>
+<a id="L97"></a><span class="visited"> </span>
+<a id="L98"></a><span > </span>
+<a id="L99"></a><span class="visited"> </span>
+<a id="L100"></a><span > </span>
 <a id="L101"></a><span > </span>
 <a id="L102"></a><span > </span>
-<a id="L103"></a><span > </span>
+<a id="L103"></a><span class="visited"> </span>
 <a id="L104"></a><span class="visited"> </span>
-<a id="L105"></a><span class="visited"> </span>
-<a id="L106"></a><span > </span>
-<a id="L107"></a><span class="unvisited"> </span>
+<a id="L105"></a><span > </span>
+<a id="L106"></a><span class="unvisited"> </span>
+<a id="L107"></a><span > </span>
 <a id="L108"></a><span > </span>
 <a id="L109"></a><span > </span>
-<a id="L110"></a><span > </span>
 </pre>
       </div>
       <div id="text-layer">
@@ -251,7 +248,6 @@
 <a href="#L107">107</a>
 <a href="#L108">108</a>
 <a href="#L109">109</a>
-<a href="#L110">110</a>
 </pre>
 <pre><code class="ocaml">open Core
 open Puzzle
@@ -268,31 +264,31 @@ type generation_result =
 (* Convert a line of cells (row/col) to a clue using RLE.
    Counts consecutive filled cells, breaking on empty/unknown cell *)
 let clue_of_cells (cells : cell_state list) : clue =
-  <span data-count="10">V</span>alidator.clue_of_cells cells
+  <span data-count="20">V</span>alidator.clue_of_cells cells
 
 (* Generate random solution grid w Random.bool (50% fill prob) for each cell.
    Keep as list-of-lists, then later convert to Puzzle.t *)
 let random_solution_grid (size : int) : cell_state list list =
-  <span data-count="1">L</span>ist.init size ~f:(fun _ -&gt;
-      <span data-count="5">L</span>ist.init size ~f:(fun _ -&gt;
-          <span data-count="25">i</span>f Random.bool () then <span data-count="17">F</span>illed else <span data-count="8">E</span>mpty))
+  <span data-count="2">L</span>ist.init size ~f:(fun _ -&gt;
+      <span data-count="10">L</span>ist.init size ~f:(fun _ -&gt;
+          <span data-count="50">i</span>f Random.bool () then <span data-count="21">F</span>illed else <span data-count="29">E</span>mpty))
 
 (* Extract row/col clues from a completed solution grid.
    Reads each row/column as a cell list, then encodes it. *)
 let clues_from_grid (grid : cell_state list list) :
     clue array * clue array =
-  <span data-count="1">l</span>et size = List.length grid in
-  <span data-count="1">l</span>et row_clues =
+  <span data-count="2">l</span>et size = List.length grid in
+  <span data-count="2">l</span>et row_clues =
     grid
-    |&gt; List.ma<span data-count="1">p</span> ~f:clue_of_cells
+    |&gt; List.ma<span data-count="2">p</span> ~f:clue_of_cells
     |&gt; Array.of_list
   in
-  <span data-count="1">l</span>et col_clues =
+  <span data-count="2">l</span>et col_clues =
     let get_col x =
-      <span data-count="5">l</span>et col = List.map grid ~f:(fun row -&gt; <span data-count="25">L</span>ist.nth_exn row x) in
-      <span data-count="5">c</span>lue_of_cells col
+      <span data-count="10">l</span>et col = List.map grid ~f:(fun row -&gt; <span data-count="50">L</span>ist.nth_exn row x) in
+      <span data-count="10">c</span>lue_of_cells col
     in
-    Array.ini<span data-count="1">t</span> size ~f:get_col
+    Array.ini<span data-count="2">t</span> size ~f:get_col
   in
   (row_clues, col_clues)
 
@@ -341,16 +337,15 @@ let generate (params : generation_params) : generation_result =
     else <span data-count="1">(</span>
       Random.self_init ();
       <span data-count="1">l</span>et rec attempt n =
-        <span data-count="1">i</span>f n = 0 then
+        <span data-count="2">i</span>f n = 0 then
           <span data-count="0">F</span>ailure "Failed to generate a uniquely solvable puzzle."
         else
-          <span data-count="1">l</span>et solution_grid = random_solution_grid size in
-          <span data-count="1">l</span>et row_clues, col_clues = clues_from_grid solution_grid in
-          <span data-count="1">l</span>et puzzle = create ~size ~row_clues ~col_clues in
+          <span data-count="2">l</span>et solution_grid = random_solution_grid size in
+          <span data-count="2">l</span>et row_clues, col_clues = clues_from_grid solution_grid in
+          <span data-count="2">l</span>et puzzle = create ~size ~row_clues ~col_clues in
           match Solver.solve puzzle with
           | <span data-count="0">S</span>olver.NoSolution
-          | <span data-count="0">P</span>artialSolution _
-          | <span data-count="0">M</span>ultipleSolutions _ -&gt;
+          | <span data-count="1">M</span>ultipleSolutions _ -&gt;
               attempt (n - 1)
           | <span data-count="1">S</span>olved solved_puzzle -&gt;
               let solution_puzzle =

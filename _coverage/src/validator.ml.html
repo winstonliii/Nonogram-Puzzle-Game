@@ -198,25 +198,25 @@ type validation_result =
   | Invalid of error list
 
 let clue_of_cells (cells : cell_state list) : clue =
-  <span data-count="42">l</span>et rec aux acc current = function
-    | <span data-count="42">[</span>] -&gt;
+  <span data-count="52">l</span>et rec aux acc current = function
+    | <span data-count="52">[</span>] -&gt;
         let acc =
           match current with
-          | <span data-count="30">0</span> -&gt; acc
-          | <span data-count="12">n</span> -&gt; n :: acc
+          | <span data-count="35">0</span> -&gt; acc
+          | <span data-count="17">n</span> -&gt; n :: acc
         in
         List.rev acc
-    | <span data-count="92">F</span>illed :: tl -&gt;
+    | <span data-count="88">F</span>illed :: tl -&gt;
         aux acc (current + 1) tl
-    | <span data-count="58">(</span><span data-count="44">E</span>mpty | <span data-count="14">U</span>nknown) :: tl -&gt;
+    | <span data-count="112">(</span><span data-count="98">E</span>mpty | <span data-count="14">U</span>nknown) :: tl -&gt;
         let acc =
           match current with
-          | <span data-count="30">0</span> -&gt; acc
-          | <span data-count="28">n</span> -&gt; n :: acc
+          | <span data-count="61">0</span> -&gt; acc
+          | <span data-count="51">n</span> -&gt; n :: acc
         in
         aux acc 0 tl
   in
-  RLE (au<span data-count="42">x</span> [] 0 cells)
+  RLE (au<span data-count="52">x</span> [] 0 cells)
 
 let clues_equal (RLE a) (RLE b) =
   <span data-count="32">L</span>ist.equal Int.equal a b
