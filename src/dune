@@ -2,4 +2,4 @@
  (name nonogram)
  (modules grid position puzzle game generator solver validator)
  (preprocess (pps ppx_jane bisect_ppx))
- (libraries core mtime mtime.clock.os dream lwt))
+ (libraries core dream lwt))

@@ -49,7 +49,7 @@ The project is divided into a core library and a web frontend. The library inclu
 
 # Dependencies
 
-All OCaml dependencies are specified in the generated nonogram_web.opam file, including core, dream, mtime, and ounit2 for testing. There are no non-opam system level dependencies.
+All OCaml dependencies are specified in the generated nonogram_web.opam file, including core, dream, and ounit2 for testing. There are no non-opam system level dependencies.
 
 # Authors
 Reena Assassa
